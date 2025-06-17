@@ -40,6 +40,22 @@ fi
 
 # if the station is configured, retrieve the AWS keys and test connectivity. 
 if [[ "$LOCATION" != "NOTCONFIGURED"  && "$LOCATION" != "" ]] ; then
+    # check if RMS is still updating - its taking longer and longer
+    loopctr=0
+    echo "Checking RMS update not in progress"
+    while [ $loopctr -lt 10 ] ; do
+            grep XX0001 $RMSCFG
+            [ $? -eq 1 ] && break
+            sleep 60
+            loopctr=$((loopctr + 1))
+            echo $loopctr
+    done
+    if [ $loopctr -eq 10 ] ; then
+            echo RMS update failed or long-running, unable to proceed
+            exit 1
+    else
+            echo all good proceeding
+    fi
     echo "checking for ukmon config changes"
     python -c "import ukmonInstaller as pp ; pp.getLatestKeys('${here}') ;"
 
