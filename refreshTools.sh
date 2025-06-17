@@ -46,9 +46,9 @@ if [[ "$LOCATION" != "NOTCONFIGURED"  && "$LOCATION" != "" ]] ; then
     while [ $loopctr -lt 10 ] ; do
             grep XX0001 $RMSCFG
             [ $? -eq 1 ] && break
+            echo "RMS update in progress or station not configured, trying again in a minute"
             sleep 60
             loopctr=$((loopctr + 1))
-            echo $loopctr
     done
     if [ $loopctr -eq 10 ] ; then
             echo RMS update failed or long-running, unable to proceed
