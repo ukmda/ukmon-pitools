@@ -223,7 +223,7 @@ def checkCrontab(myloc, datadir):
             cron.remove(job)
             cron.write()
 
-    job = cron.new('sleep 60 && {}/refreshTools.sh > {}/logs/refreshTools.log 2>&1'.format(myloc, datadir))
+    job = cron.new('sleep 120 && {}/refreshTools.sh > {}/logs/refreshTools.log 2>&1'.format(myloc, datadir))
     job.every_reboot()
     cron.write()
 
