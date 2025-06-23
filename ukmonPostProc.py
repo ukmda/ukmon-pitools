@@ -11,6 +11,8 @@
 
 import os
 import sys
+import glob
+import time
 
 import Utils.BatchFFtoImage as bff2i
 import Utils.GenerateMP4s as gmp4
@@ -46,7 +48,19 @@ def setupLogging(logpath, prefix):
     log.addHandler(ch)
 
     log.setLevel(logging.INFO)
+
+    purgeOldLogs(logdir, prefix)
+
     log.info('logging initialised')
+    return 
+
+
+def purgeOldLogs(logdir, logpref, days=30):
+    reftime = time.time() - 86400*days
+    for logf in glob.glob(os.path.join(logdir, logpref + '*.log*')):
+        if os.path.getmtime(logf) < reftime:
+            log.debug('removing old log', logf)
+            os.remove(logf)
     return 
 
 
@@ -108,8 +122,9 @@ def rmsExternal(cap_dir, arch_dir, config):
     log.info('uploading remaining files to archive')
     uploadToArchive(arch_dir, keys=keys)
 
-    # do not remote reboot lock file if running another script
+    # do not remove reboot lock file if running another script
     # os.remove(rebootlockfile)
+    
     extrascrfn = os.path.join(myloc, 'extrascript')
     if os.path.isfile(extrascrfn):
         extrascript = open(extrascrfn,'r').readline().strip()

@@ -10,9 +10,10 @@ from RMS.Logger import initLogging
 import RMS.ConfigReader as cr
 from stat import ST_INO
 from uploadToArchive import readKeyFile, readIniFile
+from ukmonPostProc import setupLogging
 
 
-log = logging.getLogger("logger")
+log = logging.getLogger()
 
 timetowait = 30 # seconds to wait for a new line before deciding the log is stale
 
@@ -54,12 +55,11 @@ def monitorLogFile(camloc, rmscfg):
     """
     cfg = cr.parse(os.path.expanduser(rmscfg))
 
-    
-    log = logging.getLogger("logger")
-    while len(log.handlers) > 0:
-        log.removeHandler(log.handlers[0])
-        
-    initLogging(cfg, 'ukmonlive_')
+    datadir = cfg.data_dir
+    logdir = os.path.expanduser(os.path.join(datadir, cfg.log_dir))
+
+    setupLogging(logdir, 'ukmonlive_')
+
     log.info('--------------------------------')
     log.info('    live feed started')
     log.info('--------------------------------')
@@ -79,8 +79,6 @@ def monitorLogFile(camloc, rmscfg):
         log.error('config file not present, aborting')
         exit(1)
 
-    datadir = cfg.data_dir
-    logdir = os.path.expanduser(os.path.join(datadir, cfg.log_dir))
     keepon = True
     logf = ''
     capdir = ''
