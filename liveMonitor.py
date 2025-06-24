@@ -6,7 +6,6 @@ import glob
 from sendToLive import uploadOneEvent
 import datetime
 import logging
-from RMS.Logger import initLogging
 import RMS.ConfigReader as cr
 from stat import ST_INO
 from uploadToArchive import readKeyFile, readIniFile
