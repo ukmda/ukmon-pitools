@@ -44,7 +44,7 @@ if [[ "$LOCATION" != "NOTCONFIGURED"  && "$LOCATION" != "" ]] ; then
     loopctr=0
     echo "Checking RMS update not in progress"
     while [ $loopctr -lt 10 ] ; do
-            grep XX0001 $RMSCFG | | grep stationID:
+            grep XX0001 $RMSCFG | grep stationID:
             [ $? -eq 1 ] && break
             echo "RMS update in progress or station not configured, trying again in a minute"
             sleep 60
