@@ -27,7 +27,7 @@ cd ukmon-pitools
 * When prompted, copy the SSH public key. 
 * If you don't get prompted for the key, then find the hidden file /home/pi/.ssh/ukmon.pub.
 
-* Email the key to markmcintyre99@googlemail.com along with your location (eg the name of your town or village), your GMN camera ID eg UK12345 and the rough direction your camera points in eg SW, S, NE. 
+* Email the key to newcamera@ukmeteornetwork.org along with your location (eg the name of your town or village), your GMN camera ID eg UK12345 and the rough direction your camera points in eg SW, S, NE. 
 
 * We will add your key to our server and send you instructions for how to complete the setup. 
 
@@ -51,7 +51,7 @@ export RMSCFG=~/source/Stations/US0001/.config
 ```
 * Now rerun ./refreshTools.sh. This time it will create an SSH key called ~/.ssh/ukmon-US0001. 
  
-* If you're setting up from scratch then email the public key to markmcintyre99@googlemail.com. We'll email back instructions in how to complete the process. 
+* If you're setting up from scratch then email the public key to newcamera@ukmeteornetwork.org. We'll email back instructions in how to complete the process. 
   
 * If you're migrating an existing installation from a pi, then you can copy over the existing keys as follows (replace 'yourpiname' with your Pi's network name or ip address):
 ``` bash
@@ -139,7 +139,7 @@ Questions
 Any questions, concerns or suggestions:
 * Check the wiki here https://github.com/markmac99/ukmon-pitools/wiki
 * Join our group on Groups.io https://groups.io/g/ukmeteornetwork/topics
-* As a last resort, email me via markmcintyre99@googlemail.com  
+* As a last resort, email us via newcamera@ukmeteornetwork.org
 
 Copyright
 =========

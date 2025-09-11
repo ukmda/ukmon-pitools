@@ -30,7 +30,7 @@ git stash apply
 if [ ! -f  ${UKMONKEY} ] ; then 
     echo "creating ukmon ssh key"
     ssh-keygen -t rsa -f ${UKMONKEY} -q -N ''
-    echo "Copy this public key and email it to the ukmon team, then "
+    echo "Copy this public key and email it to newcamera@ukmeteornetwork.org, then "
     echo "wait for confirmation its been installed and rerun this script"
     echo ""
     cat ${UKMONKEY}.pub
