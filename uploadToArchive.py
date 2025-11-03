@@ -30,7 +30,7 @@ log = logging.getLogger("logger")
 
 def readKeyFile(filename, inifvals):
     if not os.path.isfile(filename):
-        log.error('Config file missing, cannot continue')
+        log.error('Keyfile {} not downloaded. Check ssh key and station location with ukmon team.'.format(filename))
         return False
     with open(filename, 'r') as fin:
         lis = fin.readlines()
@@ -114,7 +114,7 @@ def getAWSKey(inifvals):
 
 def readIniFile(filename):
     if not os.path.isfile(filename):
-        log.error('ukmon.ini missing, cannot continue')
+        log.error('{} missing, cannot continue'.format(filename))
         return False
     with open(filename, 'r') as fin:
         lis = fin.readlines()
