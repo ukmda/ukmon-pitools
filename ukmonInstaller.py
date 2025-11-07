@@ -20,7 +20,7 @@ import RMS.ConfigReader as cr
 from RMS.Misc import isRaspberryPi
 from uploadToArchive import readIniFile
 
-log = logging.getLogger()
+log = logging.getLogger("ukmonlogger")
 log.setLevel(logging.WARNING)
 
 oldip = '3.9.65.98'

@@ -18,7 +18,7 @@ import numpy as np
 from RMS.Formats.FieldIntensities import readFieldIntensitiesBin
 
 
-log = logging.getLogger("logger")
+log = logging.getLogger("ukmonlogger")
 
 
 def getBlockBrightness(dirpath, filename):

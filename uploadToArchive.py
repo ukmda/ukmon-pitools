@@ -25,7 +25,7 @@ with warnings.catch_warnings():
 import tempfile
 from RMS.Formats.FTPdetectinfo import readFTPdetectinfo
 
-log = logging.getLogger("logger")
+log = logging.getLogger("ukmonlogger")
 
 
 def readKeyFile(filename, inifvals):

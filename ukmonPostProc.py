@@ -23,7 +23,7 @@ import datetime
 
 from uploadToArchive import uploadToArchive, readIniFile
 
-log = logging.getLogger()
+log = logging.getLogger("ukmonlogger")
 log.setLevel(logging.INFO)
 
 
@@ -31,6 +31,9 @@ def setupLogging(logpath, prefix):
     print('about to initialise logger')
     logdir = os.path.expanduser(logpath)
     os.makedirs(logdir, exist_ok=True)
+    log.info('removing any existing log handlers')
+    for handler in log.handlers[:]:
+        log.removeHandler(handler)
 
     logfilename = os.path.join(logdir, prefix + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d_%H%M%S.%f') + '.log')
     handler = logging.handlers.TimedRotatingFileHandler(logfilename, when='D', interval=1) 
