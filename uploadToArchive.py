@@ -25,12 +25,12 @@ with warnings.catch_warnings():
 import tempfile
 from RMS.Formats.FTPdetectinfo import readFTPdetectinfo
 
-log = logging.getLogger("logger")
+log = logging.getLogger("ukmonlogger")
 
 
 def readKeyFile(filename, inifvals):
     if not os.path.isfile(filename):
-        log.error('Config file missing, cannot continue')
+        log.error('Keyfile {} not downloaded. Check ssh key and station location with ukmon team.'.format(filename))
         return False
     with open(filename, 'r') as fin:
         lis = fin.readlines()
@@ -90,7 +90,7 @@ def getAWSKey(inifvals):
             handle, tmpfnam = tempfile.mkstemp()
             ftp_client.get(inifvals['LOCATION']+'.csv', tmpfnam)
         except Exception as e:
-            log.error('unable to find AWS key')
+            log.error('unable to find AWS key, check location in ukmon.ini')
             log.info(e, exc_info=True)
         ftp_client.close()
         try:
@@ -99,7 +99,7 @@ def getAWSKey(inifvals):
             os.remove(tmpfnam)
             key, sec = lis[1].split(',')
         except Exception as e:
-            log.error('malformed AWS key')
+            log.error('malformed AWS key, contact support')
             log.info(e, exc_info=True)
     except Exception as e:
         log.error('unable to retrieve AWS key')
@@ -114,7 +114,7 @@ def getAWSKey(inifvals):
 
 def readIniFile(filename):
     if not os.path.isfile(filename):
-        log.error('ukmon.ini missing, cannot continue')
+        log.error('{} missing, cannot continue'.format(filename))
         return False
     with open(filename, 'r') as fin:
         lis = fin.readlines()

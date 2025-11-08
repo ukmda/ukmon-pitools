@@ -12,7 +12,7 @@ from uploadToArchive import readKeyFile, readIniFile
 from ukmonPostProc import setupLogging
 
 
-log = logging.getLogger()
+log = logging.getLogger("ukmonlogger")
 
 timetowait = 30 # seconds to wait for a new line before deciding the log is stale
 
