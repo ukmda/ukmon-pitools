@@ -90,7 +90,7 @@ def getAWSKey(inifvals):
             handle, tmpfnam = tempfile.mkstemp()
             ftp_client.get(inifvals['LOCATION']+'.csv', tmpfnam)
         except Exception as e:
-            log.error('unable to find AWS key')
+            log.error('unable to find AWS key, check location in ukmon.ini')
             log.info(e, exc_info=True)
         ftp_client.close()
         try:
@@ -99,7 +99,7 @@ def getAWSKey(inifvals):
             os.remove(tmpfnam)
             key, sec = lis[1].split(',')
         except Exception as e:
-            log.error('malformed AWS key')
+            log.error('malformed AWS key, contact support')
             log.info(e, exc_info=True)
     except Exception as e:
         log.error('unable to retrieve AWS key')
