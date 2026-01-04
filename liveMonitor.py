@@ -14,6 +14,8 @@ from ukmonPostProc import setupLogging
 
 log = logging.getLogger("ukmonlogger")
 
+versionid='2026.01.04'
+
 timetowait = 30 # seconds to wait for a new line before deciding the log is stale
 
 # Images created more than this many seconds ago won't be uploaded. Prevents reuploads. 
@@ -60,7 +62,7 @@ def monitorLogFile(camloc, rmscfg):
     setupLogging(logdir, 'ukmonlive_')
 
     log.info('--------------------------------')
-    log.info('    live feed started')
+    log.info(f'    live feed started, version {versionid}')
     log.info('--------------------------------')
 
     log.info('Camera location is {}'.format(camloc))
