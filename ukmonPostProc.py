@@ -23,8 +23,11 @@ import datetime
 
 from uploadToArchive import uploadToArchive, readIniFile
 
+
 log = logging.getLogger("ukmonlogger")
 log.setLevel(logging.INFO)
+
+versionid = '2026.01.04'
 
 
 def setupLogging(logpath, prefix):
@@ -80,7 +83,7 @@ def rmsExternal(cap_dir, arch_dir, config):
 
     """
     setupLogging(os.path.join(config.data_dir, config.log_dir), f'ukmon_log_{config.stationID}_')
-    log.info('ukmon external script started')
+    log.info('ukmon external script started, version ' + versionid)
     
     rebootlockfile = os.path.join(config.data_dir, config.reboot_lock_file)
     with open(rebootlockfile, 'w') as f:

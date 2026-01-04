@@ -9,12 +9,11 @@ import logging
 import RMS.ConfigReader as cr
 from stat import ST_INO
 from uploadToArchive import readKeyFile, readIniFile
-from ukmonPostProc import setupLogging
+from ukmonPostProc import setupLogging, versionid
 
 
 log = logging.getLogger("ukmonlogger")
 
-versionid='2026.01.04'
 
 timetowait = 30 # seconds to wait for a new line before deciding the log is stale
 
@@ -61,9 +60,9 @@ def monitorLogFile(camloc, rmscfg):
 
     setupLogging(logdir, 'ukmonlive_')
 
-    log.info('--------------------------------')
-    log.info(f'    live feed started, version {versionid}')
-    log.info('--------------------------------')
+    log.info('------------------------------------------')
+    log.info('    live feed started, version ' + versionid)
+    log.info('------------------------------------------')
 
     log.info('Camera location is {}'.format(camloc))
     log.info('RMS config file is {}'.format(rmscfg))
