@@ -109,8 +109,10 @@ def monitorLogFile(camloc, rmscfg):
                     logf = logfs[-1]
                     loglines.close()
                 else:
-                    if "Data directory" in line: 
+                    if "Data directory" in line or 'New data directory' in line: 
                         newcapdir = line.split(' ')[5].strip()
+                        if '/' not in newcapdir:
+                            newcapdir = line.split(' ')[6].strip()
                         if capdir != newcapdir:
                             capdir = newcapdir
                             log.info('Latest capture dir is {}'.format(capdir))
