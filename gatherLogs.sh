@@ -16,6 +16,7 @@ cd logtmp_$CAMID
 
 source $here/ukmon.ini
 
+echo "gathering files"
 # gather system logs
 sudo cp /var/log/kern.log .
 [ -f /var/log/messages ] && sudo cp /var/log/messages ./messages.log; 
@@ -28,9 +29,11 @@ if [ -d /home/${LOGNAME}/source/Stations/${CAMID} ] ; then
 else
     rootdir=/home/${LOGNAME}/source/RMS
 fi 
+echo rootdir is $rootdir
 rmscfg=$rootdir/.config
-datadir=$(python -c "import configparser,os;cfg=configparser.ConfigParser();cfg.read('$rmscfg');print(cfg['Capture']['data_dir'])")
+datadir=$(python -c "import configparser,os;cfg=configparser.ConfigParser();cfg.read('$rmscfg');print(os.path.expanduser(cfg['Capture']['data_dir']))")
 logdir=$datadir/logs
+echo logdir is $logdir
 [ ! -d $logdir ] && logdir=~/RMS_data/logs
 
 # gather the RMS config and logs
@@ -40,13 +43,13 @@ cp $here/live.key ./${CAMID}.key
 cp $here/ukmon.ini .
 [ -f $here/cameras.ini ] && cp $here/cameras.ini .
 crontab -l > ./crontab.txt
-find  $logdir -maxdepth 1 -name "*.log*" -type f -mtime -5 -exec cp {} . \;
+ls -1tr $logdir/log*.log* | tail -5 | while read i; do cp $i . ; done
+ls -1tr $logdir/uk*.log* | tail -5 | while read i; do cp $i . ; done
 
 # create a tarball and upload to the server
+echo "uploading logs"
 ZIPFILE=/tmp/${CAMID}_logs.tgz
-tar cvzf $ZIPFILE *.log* ${CAMID}.config ${CAMID}.cal crontab.txt *.key *.ini
-echo waiting
-sleep 10
+tar czf $ZIPFILE *.log* ${CAMID}.config ${CAMID}.cal crontab.txt *.key *.ini
 sftp -i $UKMONKEY -q logupload@$UKMONHELPER << EOF
 cd logs
 progress
@@ -55,3 +58,4 @@ exit
 EOF
 cd ..
 rm -Rf logtmp_$CAMID
+echo "done"
