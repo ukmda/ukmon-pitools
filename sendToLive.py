@@ -170,7 +170,7 @@ def singleUpload(cap_dir, dir_file, stationid=None):
     camloc = inifvals['LOCATION']
     rmscfg = inifvals['RMSCFG']
     if not os.path.isfile(rmscfg):
-        log.error('RMS config file not found at', rmscfg, ', aborting')
+        log.error('RMS config file not found at {}, aborting'.format(rmscfg))
         return 'RMS config file not found at', rmscfg, ', aborting'
 
     # get credentials
