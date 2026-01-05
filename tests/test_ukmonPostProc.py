@@ -13,7 +13,6 @@ homedir = os.path.join(myloc, 'ukmpp')
 tmpdir = os.path.join(myloc, 'output')
 if not os.path.isdir(tmpdir):
     os.makedirs(tmpdir) # , exist_ok=Truee) exist_ok keyword not supported  with python 2.7
-rmscfg='~/source/RMS/.config'
 
 
 def test_ukmonPostProcNoArgs():

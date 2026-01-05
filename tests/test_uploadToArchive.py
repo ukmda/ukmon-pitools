@@ -37,7 +37,7 @@ def test_readKeyFile():
 def test_readKeyfileIni():
     homedir = os.path.join(basedir, 'output')
     createDefaultIni(homedir)
-    vals = readIniFile(os.path.join(homedir,'ukmon.ini'))
+    vals = readIniFile(os.path.join(homedir,'ukmon.ini'), 'TESTPI4B')
     os.remove(os.path.join(homedir,'ukmon.ini'))
     assert vals['RMSCFG'] == '~/source/RMS/.config'
 
