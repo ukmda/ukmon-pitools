@@ -16,6 +16,7 @@ if not os.path.isdir(tmpdir):
 
 
 def test_ukmonPostProcNoArgs():
+    print(os.path.listdir(os.path.expanduser('~/source/RMS')))
     ret = manualRerun(None)
     assert ret is False
 
