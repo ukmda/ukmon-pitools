@@ -25,3 +25,8 @@ echo "refreshing toolset"
 git stash 
 git pull
 git stash apply
+
+echo "testing connections"
+python $here/sendToLive.py test test
+python $here/uploadToArchive.py test
+echo "if you did not see two success messages contact us for advice" 
