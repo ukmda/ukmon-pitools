@@ -191,7 +191,7 @@ if __name__ == '__main__':
     myloc = os.path.split(os.path.abspath(__file__))[0]
     inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
     if inifvals is None:
-        print('unable to open ukmon ini file')
+        print('ukmon ini file invalid - check LOCATION')
         exit(1)
     try:
         rmscfg = inifvals['RMSCFG']
