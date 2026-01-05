@@ -24,12 +24,12 @@ def test_checkMags():
 
 
 def test_readIniFile():
-    inifs = readIniFile(os.path.join(basedir,'..','ukmon.ini'),'TESTPI4B')
+    inifs = readIniFile(os.path.join(basedir,'..','ukmon.ini'),stationid='TESTPI4B')
     assert inifs['LOCATION']=='testpi4'
 
 
 def test_readKeyFile():
-    inifs = readIniFile(os.path.join(basedir,'..','ukmon.ini'),'UK0006')
+    inifs = readIniFile(os.path.join(basedir,'..','ukmon.ini'), stationid='UK0006')
     vals = readKeyFile(os.path.join(basedir,'..','live.key'), inifs)
     assert vals['S3FOLDER'] in ['tmp/testpi4','archive/Tackley']
 
@@ -37,7 +37,7 @@ def test_readKeyFile():
 def test_readKeyfileIni():
     homedir = os.path.join(basedir, 'output')
     createDefaultIni(homedir)
-    vals = readIniFile(os.path.join(homedir,'ukmon.ini'), 'TESTPI4B')
+    vals = readIniFile(os.path.join(homedir,'ukmon.ini'), stationid='TESTPI4B')
     os.remove(os.path.join(homedir,'ukmon.ini'))
     assert vals['RMSCFG'] == '~/source/RMS/.config'
 
