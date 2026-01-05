@@ -73,7 +73,7 @@ def validateIni(homedir, newhelperip=None):
             if 'UKMONHELPER' in li:
                 helperip = li.split('=')[1]
     if location is None or keyfile is None or rmscfg is None or helperip is None:
-        createDefaultIni(homedir, newhelperip, location, keyfile, rmscfg)
+        createDefaultIni(homedir, newhelperip, location, rmscfg)
     if helperip == oldip:
         updateHelperIp(homedir, newhelperip)
     updateMp4andMag(inifname, homedir)

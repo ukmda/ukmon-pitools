@@ -89,7 +89,7 @@ def test_checkPostProcSettings():
 def test_getLatestKeys_normal():
     shutil.copyfile(os.path.join(myloc, '../ukmon.ini'),os.path.join(homedir,'ukmon.ini'))
     updateHelperIp(homedir, helperip='3.11.55.160')
-    res = getLatestKeys(homedir)
+    res = getLatestKeys(homedir, 'UK0006')
     assert res is True
     os.remove(os.path.join(homedir, 'ukmon.ini'))
     return 
@@ -99,7 +99,7 @@ def test_getLatestKeys_newname():
     shutil.copyfile(os.path.join(myloc, '../ukmon.ini'),os.path.join(homedir,'ukmon.ini'))
     updateHelperIp(homedir, helperip='3.11.55.160')
     remoteinifname = 'ukmon.ini.newname'
-    res = getLatestKeys(homedir, remoteinifname=remoteinifname)
+    res = getLatestKeys(homedir, 'UK0006', remoteinifname=remoteinifname)
     assert res is True
     lis = open(os.path.join(homedir, 'ukmon.ini'), 'r').readlines()
     for li in lis:
@@ -114,7 +114,7 @@ def test_getLatestKeys_newip():
     shutil.copyfile(os.path.join(myloc, '../ukmon.ini'),os.path.join(homedir,'ukmon.ini'))
     updateHelperIp(homedir, helperip='3.11.55.160')
     remoteinifname = 'ukmon.ini.newip'
-    res = getLatestKeys(homedir, remoteinifname=remoteinifname)
+    res = getLatestKeys(homedir, 'UK0006', remoteinifname=remoteinifname)
     assert res is True
     lis = open(os.path.join(homedir, 'ukmon.ini'), 'r').readlines()
     for li in lis:
