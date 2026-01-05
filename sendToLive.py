@@ -158,7 +158,9 @@ def singleUpload(cap_dir, dir_file, stationid=None):
     myloc = os.path.split(os.path.abspath(__file__))[0]
     if not stationid:
         stations = getListOfStations(myloc)
-        stationid = list(stations)[0][0].upper()
+        tmpid = list(stations)[0][0]
+        if tmpid:
+            stationid = tmpid.upper()
     # get camera location from ini file
 
     inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
