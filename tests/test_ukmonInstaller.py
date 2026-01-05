@@ -3,8 +3,8 @@
 import os
 import shutil
 
-from ukmonInstaller import createDefaultIni, updateHelperIp, updateLocation, \
-    checkPostProcSettings, validateIni, getLatestKeys # noqa: E402
+from ukmonInstaller import createDefaultIni, checkPostProcSettings, validateIni
+from uploadToArchive import updateHelperIp, updateLocation, getLatestKeys 
 
 myloc = os.path.split(os.path.abspath(__file__))[0]
 homedir = os.path.join(myloc, 'ukminst')
