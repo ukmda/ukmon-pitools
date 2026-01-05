@@ -166,18 +166,18 @@ def singleUpload(cap_dir, dir_file, stationid=None):
     inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
     if not inifvals:
         log.error('ukmon ini file invalid - check LOCATION')
-        return False
+        return 'ukmon ini file invalid - check LOCATION'
     camloc = inifvals['LOCATION']
     rmscfg = inifvals['RMSCFG']
     if not os.path.isfile(rmscfg):
         log.error('RMS config file not found at', rmscfg, ', aborting')
-        return False
+        return 'RMS config file not found at', rmscfg, ', aborting'
 
     # get credentials
     keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
     if not keys:
         log.error('unable to open keyfile')
-        return False
+        return 'unable to open keyfile'
 
     # Load the RMS config file
     cfg = cr.parse(os.path.expanduser(rmscfg))
