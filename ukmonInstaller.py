@@ -212,19 +212,19 @@ def createSystemdService(myloc, camid):
     return 
 
 
-def createUbuntuIcon(myloc, statid):
+def createUbuntuIcon(myloc):
     """
     Create Ubuntu-compatible desktop icons. 
     These different from the Debian-compatible ones normally used by RMS and 
     which dont work properly on Ubuntu.
     """
-    reflnk = os.path.expanduser('~/Desktop/refresh_UKMON_tools_{}.sh'.format(statid))
+    reflnk = os.path.expanduser('~/Desktop/refresh_UKMON_tools.sh')
     if os.path.isfile(reflnk):
         os.remove(reflnk)
-    reflnk = os.path.expanduser('~/Desktop/refresh_UKMON_tools_{}.desktop'.format(statid))
+    reflnk = os.path.expanduser('~/Desktop/refresh_UKMON_tools.desktop')
     with open(reflnk, 'w') as outf:
         outf.write('[Desktop Entry]\n')
-        outf.write('Name=refresh_UKMON_Tools_{}\n'.format(statid))
+        outf.write('Name=refresh_UKMON_Tools\n')
         outf.write('Comment=Runs ukmon tools refresh\n')
         outf.write('Exec={}\n'.format(os.path.join(myloc, 'refreshTools.sh')))
         outf.write('Icon=\n')
@@ -243,22 +243,19 @@ def addDesktopIcons(myloc, statid):
     print('checking/adding desktop icons')
     if not os.path.isdir(os.path.expanduser('~/Desktop')):
         os.makedirs(os.path.expanduser('~/Desktop'))
-    cfglnk = os.path.expanduser('~/Desktop/UKMON_config_{}.txt'.format(statid))
+    # the main and camera config files
+    cfglnk = os.path.expanduser('~/Desktop/UKMON_config.txt')
     if not os.path.islink(cfglnk):
         os.symlink(os.path.join(myloc, 'ukmon.ini'), cfglnk)
+    camlnk = os.path.expanduser('~/Desktop/UKMON_cameras.txt')
+    if not os.path.islink(camlnk):
+        os.symlink(os.path.join(myloc, 'cameras.ini'), camlnk)
     if isRaspberryPi():
-        reflnk = os.path.expanduser('~/Desktop/refresh_UKMON_tools_{}.sh'.format(statid))
+        reflnk = os.path.expanduser('~/Desktop/refresh_UKMON_tools.sh')
         if not os.path.islink(reflnk):
             os.symlink(os.path.join(myloc, 'refreshTools.sh'), reflnk)
     else:
-        createUbuntuIcon(myloc, statid)
-    # remove bad links if present
-    cfglnk = os.path.expanduser('~/Desktop/UKMON_config_XX0001.txt')
-    if os.path.islink(cfglnk):
-        os.unlink(cfglnk)
-    reflnk = os.path.expanduser('~/Desktop/refresh_UKMON_tools_XX0001.sh')
-    if os.path.islink(reflnk):
-        os.unlink(reflnk)
+        createUbuntuIcon(myloc)
     return
 
 

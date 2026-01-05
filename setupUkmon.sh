@@ -37,6 +37,11 @@ if [ ! -f $here/cameras.ini ] ; then
     echo "# echo add all cameras on this PC or Pi even if you only have one camera" >> $here/cameras.ini
     echo "[cameras]" >> $here/cameras.ini
     echo "${CAMID}=NOTCONFIGURED" >> $here/cameras.ini
+else
+    grep $CAMID $here/cameras.ini > /dev/null 2>&1
+    if [ $? == 1 ] ; then
+        echo "${CAMID}=NOTCONFIGURED" >> $here/cameras.ini
+    fi 
 fi
 
 source $here/ukmon.ini
@@ -88,12 +93,15 @@ if [[ "$LOCATION" != "NOTCONFIGURED"  && "$LOCATION" != "" ]] ; then
             echo all good proceeding
     fi
     echo "checking for ukmon config changes"
-    python -c "import ukmonInstaller as pp ; pp.getLatestKeys('${here}', '${stationid}') ;"
-
+    python -c "import uploadToArchive as pp ; pp.getLatestKeys('${here}', '${stationid}') ;"
+    
+    if [ -d ~/Desktop ] ; then
+        pushd ~/Desktop
+        rm -f ukmon.ini UKMON_config* refreshTools* refresh_UKMON* > /dev/null 2>&1
+    fi 
     echo "checking the RMS config file, crontab and icons"
     source ~/vRMS/bin/activate
     source $here/ukmon.ini
-    cd $(dirname $RMSCFG)
     export PYTHONPATH=$here:~/source/RMS
     python -c "import ukmonInstaller as pp ; pp.installUkmonFeed('${RMSCFG}');"
 
