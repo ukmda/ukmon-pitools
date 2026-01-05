@@ -27,7 +27,54 @@ import configparser
 
 from RMS.Formats.FTPdetectinfo import readFTPdetectinfo
 
+
 log = logging.getLogger("ukmonlogger")
+logging.getLogger("paramiko").setLevel(logging.WARNING)
+
+
+def getLatestKeys(homedir, stationid, remoteinifname='ukmon.ini'):
+    """
+    Retrieve the latest ini and key files from the ukmon server.  
+    If the ini file contains a new server IP or new location, the local copy of the 
+    ini file is updated accordingly.  
+    """
+    homedir = os.path.expanduser(os.path.normpath(homedir))
+    inifvals = readIniFile(os.path.join(homedir, 'ukmon.ini'), stationid)
+    ssh_client = paramiko.SSHClient()
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    pkey = paramiko.RSAKey.from_private_key_file(os.path.expanduser(inifvals['UKMONKEY'])) 
+    try:
+        ssh_client.connect(inifvals['UKMONHELPER'], username=inifvals['LOCATION'], pkey=pkey, look_for_keys=False)
+        ftp_client = ssh_client.open_sftp()
+    except Exception:
+        return False
+
+    # get the aws key file
+    ftp_client.get('live.key', os.path.join(homedir, 'live.key'))
+    os.chmod(os.path.join(homedir, 'live.key'), 0o600)
+
+    # get the new ini and check for changes
+    currinif = os.path.join(homedir, 'ukmon.ini')
+    newinif = os.path.join(homedir, '.ukmon.new')
+    ftp_client.put(currinif,'ukmon.ini.client')
+    ftp_client.get(remoteinifname, newinif)
+    ftp_client.close()
+    iniflines = open(newinif,'r').readlines()
+    for li in iniflines:
+        li = li.strip()
+        if 'UKMONHELPER' in li:
+            newhelper = li.split('=')[1]
+            if newhelper != inifvals['UKMONHELPER']:
+                updateHelperIp(homedir, newhelper)
+                print('server address updated')
+        if 'LOCATION' in li:
+            newloc = li.split('=')[1]
+            if newloc != inifvals['LOCATION']:
+                updateLocation(homedir, newloc)
+                print('location updated')
+    os.remove(newinif)
+    ssh_client.close()
+    return True
 
 
 def readKeyFile(filename, inifvals):
@@ -80,6 +127,36 @@ def readKeyFile(filename, inifvals):
     return vals
 
 
+def updateHelperIp(homedir, helperip):
+    """
+    Update the ukmon.ini file with a new IP address if neeeded. 
+    """
+    homedir = os.path.normpath(homedir)
+    lis = open(os.path.join(homedir, 'ukmon.ini'), 'r').readlines()
+    with open(os.path.join(homedir, 'ukmon.ini'), 'w') as outf:
+        for li in lis:
+            if 'UKMONHELPER' in li:
+                outf.write("export UKMONHELPER={}\n".format(helperip))
+            else:
+                outf.write('{}'.format(li))
+    return
+
+
+def updateLocation(homedir, newloc):
+    """
+    Update the ukmon-specific location, if a new one was supplied. Allows us to move cameras to new sites. 
+    """
+    homedir = os.path.normpath(homedir)
+    lis = open(os.path.join(homedir, 'ukmon.ini'), 'r').readlines()
+    with open(os.path.join(homedir, 'ukmon.ini'), 'w') as outf:
+        for li in lis:
+            if 'LOCATION' in li:
+                outf.write("export LOCATION={}\n".format(newloc))
+            else:
+                outf.write('{}'.format(li))
+    return 
+
+
 def getAWSKey(inifvals):
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -108,29 +185,27 @@ def getAWSKey(inifvals):
         log.info(e, exc_info=True)
     ssh_client.close()
     if key:
-        log.info('retrieved key details')
         return key.strip(), sec.strip() 
     else: 
         return False, False
 
 
 def readIniFile(filename, stationid):
-    camerafile = os.path.join(os.path.split(filename)[0],'cameras.ini')
+    myloc = os.path.dirname(filename)
+    camerafile = os.path.join(myloc,'cameras.ini')
     if not os.path.isfile(camerafile):
-        log.warning('no camerafile, assuming ini file contains location')
         location = None
     else:
-        lis = open(camerafile,'r').readlines()
-        thiscam = [x for x in lis if stationid in x]
+        stations = getListOfStations(myloc)
+        thiscam = [x for x in stations if stationid.lower() in x[0]]
         if len(thiscam)==0:
             log.error('camera {} not in cameras.ini, cannot continue'.format(stationid))
-            return False
-        location = thiscam[0].split('=')[1].strip()
+            return None
+        location = thiscam[0][1]
     if not os.path.isfile(filename):
         log.error('{} missing, cannot continue'.format(filename))
-        return False
-    with open(filename, 'r') as fin:
-        lis = fin.readlines()
+        return None
+    lis = open(filename, 'r').readlines()
     vals = {}
     for li in lis:
         if li[0]=='#':
@@ -141,11 +216,12 @@ def readIniFile(filename, stationid):
             val = data[1].strip().strip('"')
             vals[data[0]] = val
     if location:
-        vals['LOCATION'] = location
-    if os.path.isfile(os.path.expanduser('~/.ssh/ukmon_' + stationid)):
-        vals['UKMONKEY'] = '~/.ssh/ukmon_' + stationid
-    if os.path.isfile(os.path.expanduser('~/source/Stations/' + stationid + '/.config')):
-        vals['RMSCFG'] = os.path.expanduser('~/source/Stations/' + stationid + '/.config')
+        vals['LOCATION'] = location.strip()
+    if stationid:
+        if os.path.isfile(os.path.expanduser('~/.ssh/ukmon_' + stationid.upper())):
+            vals['UKMONKEY'] = '~/.ssh/ukmon_' + stationid.upper()
+        if os.path.isfile(os.path.expanduser('~/source/Stations/' + stationid + '/.config')):
+            vals['RMSCFG'] = os.path.expanduser('~/source/Stations/' + stationid + '/.config')
     return vals
 
 
@@ -395,7 +471,7 @@ def uploadToArchive(arch_dir, stationid, sciencefiles=False, keys=False):
 def getListOfStations(srcdir):
     camfile = os.path.join(srcdir, 'cameras.ini')
     if not os.path.isfile(camfile):
-        return ('NOTCONFIGURED','')
+        return [(None,'')]
     camcfg = configparser.ConfigParser()
     camcfg.read(camfile)
     return camcfg['cameras'].items()
@@ -415,28 +491,30 @@ def manualUpload(targ_dir, stationid, sciencefiles=False):
     """
     if targ_dir == 'test':
         myloc = os.path.split(os.path.abspath(__file__))[0]
-        for cam in getListOfStations(myloc):
-            try:
-                stationid = cam[0].upper()
-                if stationid != 'NOTCONFIGURED':
-                    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
-                    if not inifvals:
-                        continue
-                    print(inifvals)
-                    keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
-                    if not keys:
-                        return False
-                    with open('/tmp/test.txt', 'w') as f:
-                        f.write('{}'.format(inifvals['LOCATION']))
+        stations = getListOfStations(myloc)
+        for cam in stations:
+            stationid = cam[0]
+            inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
+            if not inifvals:
+                continue
+            if stationid is not None:
+                stationid = stationid.upper()
+            if not getLatestKeys(myloc, stationid):
+                print('unable to get key for', inifvals['LOCATION'])
+                continue
+            keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
+            if not keys:
+                continue
+            with open('/tmp/test.txt', 'w') as f:
+                f.write('{}'.format(inifvals['LOCATION']))
 
-                    target = keys['ARCHBUCKET']
-                    reg = keys['ARCHREGION']
-                    conn = boto3.Session(aws_access_key_id=keys['AWS_ACCESS_KEY_ID'], aws_secret_access_key=keys['AWS_SECRET_ACCESS_KEY']) 
-                    s3 = conn.resource('s3', region_name=reg)
-                    s3.meta.client.upload_file('/tmp/test.txt', target, 'tmp/{}.txt'.format(keys['CAMLOC']))
-                    print('test successful for' + stationid)
-            except Exception:
-                print('archive upload test failed for {} - check ssh key'.format(stationid))
+            target = keys['ARCHBUCKET']
+            reg = keys['ARCHREGION']
+            conn = boto3.Session(aws_access_key_id=keys['AWS_ACCESS_KEY_ID'], aws_secret_access_key=keys['AWS_SECRET_ACCESS_KEY']) 
+            s3 = conn.resource('s3', region_name=reg)
+            s3.meta.client.upload_file('/tmp/test.txt', target, 'tmp/{}.txt'.format(keys['CAMLOC']))
+            stationid = '' if stationid is None else stationid
+            print('test successful for', inifvals['LOCATION'], stationid)
         try:
             os.remove('/tmp/test.txt')
         except Exception:
