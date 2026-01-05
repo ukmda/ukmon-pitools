@@ -17,19 +17,18 @@ rmscfg='~/source/RMS/.config'
 
 
 def test_ukmonPostProcNoArgs():
-    args=[None]
-    ret = manualRerun(*args)
+    ret = manualRerun(None)
     assert ret is False
 
 
 @pytest.mark.skipif(sys.platform == 'win32', reason='test not valid on windows')
 def test_ukmonPostProc1Arg():
-    args=[None, os.path.join(myloc, 'ukmarch/sampledata/UK0006_20220914_185543_087124')]
-    ret = manualRerun(*args)
+    args=os.path.join(myloc, 'ukmarch/sampledata/UK0006_20220914_185543_087124')
+    ret = manualRerun(args)
     assert ret is True
 
 
 def test_ukmonPostProc1BadArg():
-    args=[None, os.path.join(myloc, 'ukmarch/sampledata/UK0006_20220914_185543')]
+    args=os.path.join(myloc, 'ukmarch/sampledata/UK0006_20220914_185543')
     ret = manualRerun(*args)
     assert ret is False
