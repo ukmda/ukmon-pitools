@@ -23,6 +23,8 @@ with warnings.catch_warnings():
     warnings.filterwarnings('ignore', category=CryptographyDeprecationWarning)
     import paramiko
 import tempfile
+import configparser
+
 from RMS.Formats.FTPdetectinfo import readFTPdetectinfo
 
 log = logging.getLogger("ukmonlogger")
@@ -112,7 +114,18 @@ def getAWSKey(inifvals):
         return False, False
 
 
-def readIniFile(filename):
+def readIniFile(filename, stationid):
+    camerafile = os.path.join(os.path.split(filename)[0],'cameras.ini')
+    if not os.path.isfile(camerafile):
+        log.warning('no camerafile, assuming ini file contains location')
+        location = None
+    else:
+        lis = open(camerafile,'r').readlines()
+        thiscam = [x for x in lis if stationid in x]
+        if len(thiscam)==0:
+            log.error('camera {} not in cameras.ini, cannot continue'.format(stationid))
+            return False
+        location = thiscam[0].split('=')[1].strip()
     if not os.path.isfile(filename):
         log.error('{} missing, cannot continue'.format(filename))
         return False
@@ -127,6 +140,12 @@ def readIniFile(filename):
             data = valstr.split('=')
             val = data[1].strip().strip('"')
             vals[data[0]] = val
+    if location:
+        vals['LOCATION'] = location
+    if os.path.isfile(os.path.expanduser('~/.ssh/ukmon_' + stationid)):
+        vals['UKMONKEY'] = '~/.ssh/ukmon_' + stationid
+    if os.path.isfile(os.path.expanduser('~/source/Stations/' + stationid + '/.config')):
+        vals['RMSCFG'] = os.path.expanduser('~/source/Stations/' + stationid + '/.config')
     return vals
 
 
@@ -284,11 +303,11 @@ def checkMags(dir_path, ftpfile_name, min_mag):
     return ff_names
 
 
-def uploadToArchive(arch_dir, sciencefiles=False, keys=False):
+def uploadToArchive(arch_dir, stationid, sciencefiles=False, keys=False):
     # Upload all relevant files from *arch_dir* to ukmon's S3 Archive
 
     myloc = os.path.split(os.path.abspath(__file__))[0]
-    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'))
+    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
     if not inifvals:
         return False
     if not keys:
@@ -373,7 +392,17 @@ def uploadToArchive(arch_dir, sciencefiles=False, keys=False):
     return keys
 
 
-def manualUpload(targ_dir, sciencefiles=False):
+def getListOfStations(srcdir):
+    camfile = os.path.join(srcdir, 'cameras.ini')
+    if not os.path.isfile(camfile):
+        return ('NOTCONFIGURED','')
+    camcfg = configparser.ConfigParser()
+    camcfg.read(camfile)
+    return camcfg['cameras'].items()
+
+
+
+def manualUpload(targ_dir, stationid, sciencefiles=False):
     """ Manually send the target folder to ukmon archive.  
 
     Args:  
@@ -385,29 +414,28 @@ def manualUpload(targ_dir, sciencefiles=False):
     If the argument is 'test' then a test file is uploaded and the status reported back.  
     """
     if targ_dir == 'test':
-        try:
-            myloc = os.path.split(os.path.abspath(__file__))[0]
-            inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'))
-            if not inifvals:
-                return False
-            keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
-            if not keys:
-                return False
-            with open('/tmp/test.txt', 'w') as f:
-                f.write('{}'.format(inifvals['LOCATION']))
+        myloc = os.path.split(os.path.abspath(__file__))[0]
+        for cam in getListOfStations(myloc):
+            try:
+                stationid = cam[0].upper()
+                if stationid != 'NOTCONFIGURED':
+                    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
+                    if not inifvals:
+                        continue
+                    keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
+                    if not keys:
+                        return False
+                    with open('/tmp/test.txt', 'w') as f:
+                        f.write('{}'.format(inifvals['LOCATION']))
 
-            target = keys['ARCHBUCKET']
-            reg = keys['ARCHREGION']
-            conn = boto3.Session(aws_access_key_id=keys['AWS_ACCESS_KEY_ID'], aws_secret_access_key=keys['AWS_SECRET_ACCESS_KEY']) 
-            s3 = conn.resource('s3', region_name=reg)
-            s3.meta.client.upload_file('/tmp/test.txt', target, 'tmp/{}.txt'.format(keys['CAMLOC']))
-            #key = {'Objects': []}
-            #key['Objects'] = [{'Key': 'test.txt'}]
-            #s3.meta.client.delete_objects(Bucket=target, Delete=key)
-            print('test successful')
-        except Exception:
-            print('unable to upload to archive - check key information')
-            return False
+                    target = keys['ARCHBUCKET']
+                    reg = keys['ARCHREGION']
+                    conn = boto3.Session(aws_access_key_id=keys['AWS_ACCESS_KEY_ID'], aws_secret_access_key=keys['AWS_SECRET_ACCESS_KEY']) 
+                    s3 = conn.resource('s3', region_name=reg)
+                    s3.meta.client.upload_file('/tmp/test.txt', target, 'tmp/{}.txt'.format(keys['CAMLOC']))
+                    print('test successful for' + stationid)
+            except Exception:
+                print('archive upload test failed for {} - check ssh key'.format(stationid))
         try:
             os.remove('/tmp/test.txt')
         except Exception:
@@ -418,14 +446,20 @@ def manualUpload(targ_dir, sciencefiles=False):
         if not os.path.isdir(arch_dir):
             print('folder {} not found'.format(arch_dir))
             return False
-        return uploadToArchive(arch_dir, sciencefiles, keys=None)
+        return uploadToArchive(arch_dir, stationid, sciencefiles, keys=None)
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print('usage: python uploadToArchive.py ~/RMS_data/ArchivedFiles/dated_dir')
+        print('usage: python uploadToArchive.py dated_dir ')
+        print('   eg: python uploadToArchive.py  UK001L_20260104_171228_956526')
+        print('Optionally include the full path otherwise RMSs ArchivedFiles folder is assumed')
         exit(0)
-    targdir = sys.argv[1]
-    manualUpload(targdir, True)
+    targdir = os.path.normpath(os.path.expanduser(sys.argv[1]))
     if targdir != 'test':
-        manualUpload(targdir)
+        nightdir = os.path.split(targdir)[1]
+        stationid = nightdir.split('_')[0]
+        manualUpload(targdir, stationid, sciencefiles=True)
+        manualUpload(targdir, stationid, sciencefiles=False)
+    else:
+        manualUpload(targdir, None, sciencefiles=True)

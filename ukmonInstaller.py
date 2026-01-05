@@ -304,14 +304,14 @@ def addDesktopIcons(myloc, statid):
     return
 
 
-def getLatestKeys(homedir, remoteinifname='ukmon.ini'):
+def getLatestKeys(homedir, stationid, remoteinifname='ukmon.ini'):
     """
     Retrieve the latest ini and key files from the ukmon server.  
     If the ini file contains a new server IP or new location, the local copy of the 
     ini file is updated accordingly.  
     """
     homedir = os.path.expanduser(os.path.normpath(homedir))
-    inifvals = readIniFile(os.path.join(homedir, 'ukmon.ini'))
+    inifvals = readIniFile(os.path.join(homedir, 'ukmon.ini'), stationid)
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     #try: 
@@ -357,7 +357,7 @@ def checkPlatepar(homedir, statid, rmsloc):
     The file is checked for compatability with the station.  
     """
     homedir = os.path.expanduser(os.path.normpath(homedir))
-    inifvals = readIniFile(os.path.join(homedir, 'ukmon.ini'))
+    inifvals = readIniFile(os.path.join(homedir, 'ukmon.ini'), statid)
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try: 

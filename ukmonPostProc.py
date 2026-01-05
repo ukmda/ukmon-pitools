@@ -90,7 +90,7 @@ def rmsExternal(cap_dir, arch_dir, config):
         f.write('1')
 
     log.info('uploading key science files to archive')
-    keys = uploadToArchive(arch_dir, sciencefiles=True)
+    keys = uploadToArchive(arch_dir, config.stationID, sciencefiles=True)
     # create jpgs from the potential detections
     log.info('creating JPGs')
     try:
@@ -99,7 +99,7 @@ def rmsExternal(cap_dir, arch_dir, config):
         bff2i.batchFFtoImage(arch_dir, 'jpg')
 
     myloc = os.path.split(os.path.abspath(__file__))[0]
-    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'))
+    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), config.stationID)
     log.info('app home is {}'.format(myloc))
     domp4s = 0
     if 'DOMP4S' in inifvals:
@@ -126,7 +126,7 @@ def rmsExternal(cap_dir, arch_dir, config):
         log.info('mp4 creation not enabled')
     
     log.info('uploading remaining files to archive')
-    uploadToArchive(arch_dir, keys=keys)
+    uploadToArchive(arch_dir, config.stationID, keys=keys)
 
     # do not remove reboot lock file if running another script
     # os.remove(rebootlockfile)
@@ -177,33 +177,30 @@ def manualRerun(dated_dir, rmscfg = '~/source/RMS/.config'):
     return rmsExternal(cap_dir, arch_dir, config)
 
 
-def main(args):
-    if len(args) < 2:
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
         print('usage: python ukmonPostProc.py arc_dir_name')
         print('eg python ukmonPostProc.py UK0006_20210312_183741_206154')
         print('\n nb: script must be run from RMS source folder')
-        return False
+        exit(0)
     
-    arch_dir = args[1]
+    arch_dir = sys.argv[1]
+    if 'ConfirmedFiles' in arch_dir or 'ArchivedFiles' in arch_dir or 'CapturedFiles' in arch_dir:
+        _, arch_dir = os.path.split(arch_dir)
+    stationid = arch_dir.split('_')[0]
     myloc = os.path.split(os.path.abspath(__file__))[0]
-    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'))
+    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
     if inifvals is None:
         print('unable to open ukmon ini file')
-        return 'unable to open ukmon ini file'
+        exit(1)
     try:
         rmscfg = inifvals['RMSCFG']
     except Exception:
         rmscfg='~/source/RMS/.config'
     try:
-        if 'ConfirmedFiles' in arch_dir or 'ArchivedFiles' in arch_dir or 'CapturedFiles' in arch_dir:
-            _, arch_dir = os.path.split(arch_dir)
         print('RMS config read from {}'.format(rmscfg))
         ret = manualRerun(arch_dir, rmscfg)
-        return ret
+        exit(0)
     except Exception:
         print('unable to call manualRerun')
-        return False
-
-
-if __name__ == '__main__':
-    main(sys.argv)
+        exit(1)
