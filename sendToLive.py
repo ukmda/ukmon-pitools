@@ -169,7 +169,7 @@ def singleUpload(cap_dir, dir_file, stationid=None):
         return 'ukmon ini file invalid - check LOCATION'
     camloc = inifvals['LOCATION']
     rmscfg = inifvals['RMSCFG']
-    if not os.path.isfile(rmscfg):
+    if not os.path.isfile(os.path.expanduser(rmscfg)):
         log.error('RMS config file not found at {}, aborting'.format(rmscfg))
         return 'RMS config file not found at', rmscfg, ', aborting'
 
