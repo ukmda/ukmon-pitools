@@ -11,7 +11,7 @@ import Utils.BatchFFtoImage as bff
 import shutil
 import tempfile
 import boto3
-from uploadToArchive import readKeyFile, readIniFile
+from uploadToArchive import readKeyFile, readIniFile, getListOfStations
 import logging
 import RMS.ConfigReader as cr
 import numpy as np
@@ -137,7 +137,7 @@ def testFeed(keys, cfg):
     return retmsg
 
 
-def singleUpload(cap_dir, dir_file):
+def singleUpload(cap_dir, dir_file, stationid=None):
     """This function is used to manually upload a single event.
     It can also be used to test the connection - see note below. 
 
@@ -156,19 +156,19 @@ def singleUpload(cap_dir, dir_file):
 
     camloc = None
     myloc = os.path.split(os.path.abspath(__file__))[0]
+    if not stationid:
+        stations = getListOfStations(myloc)
+        stationid = list(stations)[0][0].upper()
     # get camera location from ini file
 
-    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'))
+    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
     if not inifvals:
         log.warning('unable to open ini file')
-        return 'unable to open ini file'
+        return 'unable to open ukmon.ini file'
     camloc = inifvals['LOCATION']
-    try:
-        rmscfg = inifvals['RMSCFG']
-    except Exception:
-        rmscfg='~/source/RMS/.config'
-    if camloc == 'NOTCONFIGURED':
-        print('LOCATION not found in ini file, aborting')
+    rmscfg = inifvals['RMSCFG']
+    if camloc == 'NOTCONFIGURED' or not os.path.isfile(rmscfg):
+        print('LOCATION not configured in ukmon.ini or RMS config file not found at', rmscfg, ', aborting')
         return 'not configured'
 
     # get credentials
@@ -177,10 +177,8 @@ def singleUpload(cap_dir, dir_file):
         log.warning('unable to open keyfile')
         return 'unable to open keyfile'
 
-    # read a few variables from the RMS config file
+    # Load the RMS config file
     cfg = cr.parse(os.path.expanduser(rmscfg))
-#    configpath, configname = os.path.split(os.path.expanduser(rmscfg))
-#    cfg = cr.loadConfigFromDirectory(configname, configpath)
 
     if cap_dir == 'test' and dir_file == 'test':
         retmsg = testFeed(keys, cfg)
@@ -191,7 +189,11 @@ def singleUpload(cap_dir, dir_file):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print('usage: python sendToLive.py capdir ffname')
+        print('usage: python sendToLive.py capdir ffname camid')
+        print('or')
+        print('     : python sendToLive.py test test')
         exit(1)
-    retmsg = singleUpload(sys.argv[1], sys.argv[2])
+    
+    stationid = sys.argv[3] if len(sys.argv) > 3 else None
+    retmsg = singleUpload(sys.argv[1], sys.argv[2], stationid)
     print(retmsg)
