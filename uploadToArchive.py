@@ -499,9 +499,10 @@ def manualUpload(targ_dir, stationid, sciencefiles=False):
                 continue
             if stationid is not None:
                 stationid = stationid.upper()
-            if not getLatestKeys(myloc, stationid):
-                print('unable to get key for', inifvals['LOCATION'])
-                continue
+            if not os.path.isfile(os.path.join(myloc, 'live.key')):
+                if not getLatestKeys(myloc, stationid):
+                    print('unable to get key for', inifvals['LOCATION'])
+                    continue
             keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
             if not keys:
                 continue
