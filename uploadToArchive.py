@@ -222,6 +222,8 @@ def readIniFile(filename, stationid):
             vals['UKMONKEY'] = '~/.ssh/ukmon_' + stationid.upper()
         if os.path.isfile(os.path.expanduser('~/source/Stations/' + stationid + '/.config')):
             vals['RMSCFG'] = os.path.expanduser('~/source/Stations/' + stationid + '/.config')
+    if vals['LOCATION'] == 'NOTCONFIGURED':
+        return None
     return vals
 
 
