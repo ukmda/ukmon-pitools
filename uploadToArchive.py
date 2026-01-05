@@ -422,6 +422,7 @@ def manualUpload(targ_dir, stationid, sciencefiles=False):
                     inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
                     if not inifvals:
                         continue
+                    print(inifvals)
                     keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
                     if not keys:
                         return False
