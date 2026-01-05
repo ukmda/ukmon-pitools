@@ -33,7 +33,7 @@ def createDefaultIni(homedir, helperip='3.11.55.160', location='NOTCONFIGURED', 
     """
     homedir = os.path.normpath(os.path.expanduser(homedir))
     rmscfg = '~/source/Stations/{}/.config'.format(stationid)
-    if not os.path.isfile(rmscfg):
+    if not os.path.isfile(os.path.expanduser(rmscfg)):
         rmscfg = '~/source/RMS/.config'
     
     keyfile = '~/.ssh/ukmon_{}'.format(stationid)

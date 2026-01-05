@@ -1,6 +1,0 @@
-# Sample camera mapping file
-# add your location/cameraid mappings to this even if you only have one camera
-[cameras]
-GMNID_1=location_1
-GMNID_2=location_2
-GMNID_3=location_3

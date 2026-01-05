@@ -7,6 +7,7 @@ myself=$(readlink -f $0)
 here="$( cd "$(dirname "$myself")" >/dev/null 2>&1 ; pwd -P )"
 
 CAMID=$1
+CAMID=${CAMID^^}
 
 if [ "$CAMID" == "" ] ; then
     echo "Usage: ./setupUkmon.sh RMSID"
@@ -26,8 +27,18 @@ git stash apply
 UKMONKEY=~/.ssh/ukmon_$CAMID
 
 if [ ! -f $here/ukmon.ini ] ; then
+    echo "creating default ukmon ini file"
     python -c "from ukmonInstaller import createDefaultIni;createDefaultIni('$here', stationid='$CAMID');"
 fi 
+
+if [ ! -f $here/cameras.ini ] ; then
+    echo "creating cameras.ini file"
+    echo "# camera mapping file" > $here/cameras.ini
+    echo "# echo add all cameras on this PC or Pi even if you only have one camera" >> $here/cameras.ini
+    echo "[cameras]" >> $here/cameras.ini
+    echo "${CAMID}=NOTCONFIGURED" >> $here/cameras.ini
+fi
+
 source $here/ukmon.ini
 # creating an ssh key if not already present
 if [ ! -f  ${UKMONKEY} ] ; then 
@@ -47,6 +58,10 @@ pip list | grep boto3 || pip install boto3
 # python-crontab v2.5.1 for python 2.7 backwards compatability. Sigh. 
 pip list | grep python-crontab | grep 2.5.1 || pip install python-crontab==2.5.1
 pip list | grep paramiko || pip install paramiko
+
+# get the location code from the cameras.ini file
+LOCATION=$(grep $CAMID $here/cameras.ini)
+LOCATION=$(echo $LOCATION | awk -F "=" '{print $2}')
 
 # if the station is configured, retrieve the AWS keys and test connectivity. 
 if [[ "$LOCATION" != "NOTCONFIGURED"  && "$LOCATION" != "" ]] ; then
@@ -75,8 +90,6 @@ if [[ "$LOCATION" != "NOTCONFIGURED"  && "$LOCATION" != "" ]] ; then
     echo "checking for ukmon config changes"
     python -c "import ukmonInstaller as pp ; pp.getLatestKeys('${here}', '${stationid}') ;"
 
-    if [ -f archive.key ] ; then \rm archive.key ; fi 
-
     echo "checking the RMS config file, crontab and icons"
     source ~/vRMS/bin/activate
     source $here/ukmon.ini
@@ -91,13 +104,14 @@ if [[ "$LOCATION" != "NOTCONFIGURED"  && "$LOCATION" != "" ]] ; then
     if [ "$DOCKER_RUNNING" != "true" ] ; then read -p "Press any key to finish" ; fi
     echo "done"
 else
+    echo $RMSCFG $CAMID
     statid=$(grep stationID $RMSCFG | awk -F" " '{print $2}')
     if [ "$statid" == "XX0001" ] ; then
         echo "You must configure RMS before setting up the ukmon tools"
     else
-        python -c "import ukmonInstaller as pp ; pp.addDesktopIcons('${here}', '${statid}');"
-        echo "Location missing - unable to continue. Please obtain a location code from the UKMON team,"
-        echo "then update the UKMON Config File using the desktop icon and rerun this script."
+        #python -c "import ukmonInstaller as pp ; pp.addDesktopIcons('${here}', '${statid}');"
+        echo "Location missing. Please obtain a location code from the UKMON team,"
+        echo "then update cameras.ini and rerun this script."
     fi 
     sleep 5
     if [ "$DOCKER_RUNNING" != "true" ] ; then read -p "Press any key to end" ; fi
