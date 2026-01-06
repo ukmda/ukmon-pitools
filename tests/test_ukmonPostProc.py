@@ -9,14 +9,14 @@ from ukmonPostProc import manualRerun
 
 
 myloc = os.path.split(os.path.abspath(__file__))[0]
-homedir = os.path.join(myloc, 'ukmpp')
+#homedir = os.path.join(myloc, 'ukmpp')
 tmpdir = os.path.join(myloc, 'output')
 if not os.path.isdir(tmpdir):
     os.makedirs(tmpdir) # , exist_ok=Truee) exist_ok keyword not supported  with python 2.7
 
 
 def test_ukmonPostProcNoArgs():
-    print(os.path.listdir(os.path.expanduser('~/source/RMS')))
+    print(os.listdir('.'))
     ret = manualRerun(None)
     assert ret is False
 
