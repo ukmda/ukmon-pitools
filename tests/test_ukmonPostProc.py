@@ -24,11 +24,11 @@ def test_ukmonPostProcNoArgs():
 @pytest.mark.skipif(sys.platform == 'win32', reason='test not valid on windows')
 def test_ukmonPostProc1Arg():
     args=os.path.join(myloc, 'ukmarch/sampledata/UK0006_20220914_185543_087124')
-    ret = manualRerun(args)
+    ret = manualRerun(dated_dir=args)
     assert ret is True
 
 
 def test_ukmonPostProc1BadArg():
     args=os.path.join(myloc, 'ukmarch/sampledata/UK0006_20220914_185543')
-    ret = manualRerun(*args)
+    ret = manualRerun(dated_dir=args)
     assert ret is False
