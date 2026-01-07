@@ -100,11 +100,9 @@ def relocateGitRepo():
         remote.Remote.add(thisrepo, 'origin','https://github.com/ukmda/ukmon-pitools.git')
         cfg = thisrepo.heads.main.config_writer()
         cfg.set('remote','origin')
-        cfg.write()
         cfg.release()
         cfg = thisrepo.heads.dev.config_writer()
         cfg.set('remote','origin')
-        cfg.write()
         cfg.release()
         log.info('git remote updated')
     return 
