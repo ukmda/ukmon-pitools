@@ -13,12 +13,7 @@ pids=$(ps -ef | grep ${here}/liveMonitor | egrep -v "grep|$$" | awk '{print $2}'
 
 source $here/ukmon.ini
 
-if [ "$LOCATION" == "NOTCONFIGURED" ]; then
-    echo "station not configured, unable to continue" 
-    exit 1
-fi
-rmsdir=$(dirname $RMSCFG)
-cd $rmsdir
+cd ~/source/RMS
 export PYTHONPATH=$here:~/source/RMS
 if [ -f $here/cameras.ini ] ; then
     cat $here/cameras.ini | grep = | while read i 
@@ -26,5 +21,9 @@ if [ -f $here/cameras.ini ] ; then
         python $here/liveMonitor.py ${i:7:60} ${i:0:6} &
     done    
 else
+    if [ "$LOCATION" == "NOTCONFIGURED" ]; then
+        echo "station not configured, unable to continue" 
+        exit 1
+    fi
     python $here/liveMonitor.py $LOCATION &
 fi
