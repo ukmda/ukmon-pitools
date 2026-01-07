@@ -36,14 +36,12 @@ if [ ! -f $here/cameras.ini ] ; then
     echo "# camera mapping file" > $here/cameras.ini
     echo "# echo add all cameras on this PC or Pi even if you only have one camera" >> $here/cameras.ini
     echo "[cameras]" >> $here/cameras.ini
+fi
+grep $CAMID $here/cameras.ini > /dev/null 2>&1
+if [ $? == 1 ] ; then
     loc=$(python -c "from ukmonInstaller import findLocationFromOldIni;print(findLocationFromOldIni('$CAMID'))")
     echo "${CAMID}=${loc}" >> $here/cameras.ini
-else
-    grep $CAMID $here/cameras.ini > /dev/null 2>&1
-    if [ $? == 1 ] ; then
-        echo "${CAMID}=NOTCONFIGURED" >> $here/cameras.ini
-    fi 
-fi
+fi 
 
 source $here/ukmon.ini
 # creating an ssh key if not already present
