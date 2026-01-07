@@ -4,6 +4,7 @@ import os
 import shutil
 from crontab import CronTab
 from subprocess import call
+from git import remote, Repo
 
 import time
 import warnings
@@ -88,6 +89,21 @@ def findLocationFromOldIni(stationid):
         loc = [x for x in flis if 'LOCA' in x]
         location = loc[0].strip().split('=')[1]
     return location    
+
+
+def relocateGitRepo():
+    myloc = os.path.split(os.path.abspath(__file__))[0]
+    thisrepo = Repo(myloc)
+    origin = thisrepo.remote('origin')
+    if 'markmac99' in origin.url:
+        origin.rename('upstream')
+        remote.Remote.add(thisrepo, 'origin','https://github.com/ukmda/ukmon-pitools.git')
+        cfg = thisrepo.heads.main.config_writer()
+        cfg.set('remote','origin')
+        cfg = thisrepo.heads.dev.config_writer()
+        cfg.set('remote','origin')
+        log.info('git remote updated')
+    return 
 
 
 def updateMp4andMag(inif, homedir):

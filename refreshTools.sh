@@ -26,6 +26,8 @@ git stash
 git pull
 git stash apply
 
+python -c "from ukmonInstaller import relocateGitRepo;relocateGitRepo()"
+
 echo "testing connections"
 python $here/sendToLive.py test test
 python $here/uploadToArchive.py test
