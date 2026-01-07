@@ -183,7 +183,6 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print('usage: python ukmonPostProc.py arc_dir_name')
         print('eg python ukmonPostProc.py UK0006_20210312_183741_206154')
-        print('\n nb: script must be run from RMS source folder')
         exit(0)
     
     arch_dir = sys.argv[1]

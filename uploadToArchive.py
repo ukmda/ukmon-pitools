@@ -42,6 +42,8 @@ def getLatestKeys(homedir, stationid, remoteinifname='ukmon.ini'):
     inifvals = readIniFile(os.path.join(homedir, 'ukmon.ini'), stationid)
     if not inifvals or inifvals['LOCATION']=='NOTCONFIGURED':
         return False
+    if not os.path.isfile(os.path.expanduser(inifvals['UKMONKEY'])):
+        return False
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     pkey = paramiko.RSAKey.from_private_key_file(os.path.expanduser(inifvals['UKMONKEY'])) 
