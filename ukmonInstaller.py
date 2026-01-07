@@ -266,6 +266,8 @@ def checkPlatepar(homedir, statid, rmsloc):
     """
     homedir = os.path.expanduser(os.path.normpath(homedir))
     inifvals = readIniFile(os.path.join(homedir, 'ukmon.ini'), statid)
+    if not inifvals or inifvals['LOCATION']=='NOTCONFIGURED':
+        return
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try: 

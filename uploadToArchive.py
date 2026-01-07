@@ -40,6 +40,8 @@ def getLatestKeys(homedir, stationid, remoteinifname='ukmon.ini'):
     """
     homedir = os.path.expanduser(os.path.normpath(homedir))
     inifvals = readIniFile(os.path.join(homedir, 'ukmon.ini'), stationid)
+    if not inifvals or inifvals['LOCATION']=='NOTCONFIGURED':
+        return False
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     pkey = paramiko.RSAKey.from_private_key_file(os.path.expanduser(inifvals['UKMONKEY'])) 
@@ -200,10 +202,12 @@ def readIniFile(filename, stationid):
         thiscam = [x for x in stations if stationid.lower() in x[0]]
         if len(thiscam)==0:
             log.error('camera {} not in cameras.ini, cannot continue'.format(stationid))
+            print('missing camera file')
             return None
         location = thiscam[0][1]
     if not os.path.isfile(filename):
         log.error('{} missing, cannot continue'.format(filename))
+        print('missing file')
         return None
     lis = open(filename, 'r').readlines()
     vals = {}
@@ -222,8 +226,8 @@ def readIniFile(filename, stationid):
             vals['UKMONKEY'] = '~/.ssh/ukmon_' + stationid.upper()
         if os.path.isfile(os.path.expanduser('~/source/Stations/' + stationid + '/.config')):
             vals['RMSCFG'] = os.path.expanduser('~/source/Stations/' + stationid + '/.config')
-    if vals['LOCATION'] == 'NOTCONFIGURED':
-        return None
+    #if vals['LOCATION'] == 'NOTCONFIGURED':
+    #    return None
     return vals
 
 
@@ -386,7 +390,7 @@ def uploadToArchive(arch_dir, stationid, sciencefiles=False, keys=False):
 
     myloc = os.path.split(os.path.abspath(__file__))[0]
     inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
-    if not inifvals:
+    if inifvals['LOCATION']=='NOTCONFIGURED':
         return False
     if not keys:
         keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
@@ -497,7 +501,7 @@ def manualUpload(targ_dir, stationid, sciencefiles=False):
         for cam in stations:
             stationid = cam[0]
             inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
-            if not inifvals:
+            if inifvals['LOCATION']=='NOTCONFIGURED':
                 continue
             if stationid is not None:
                 stationid = stationid.upper()

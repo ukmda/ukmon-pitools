@@ -164,7 +164,7 @@ def singleUpload(cap_dir, dir_file, stationid=None):
     # get camera location from ini file
 
     inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
-    if not inifvals:
+    if not inifvals or inifvals['LOCATION']=='NOTCONFIGURED':
         log.error('ukmon ini file invalid - check LOCATION')
         return 'ukmon ini file invalid - check LOCATION'
     camloc = inifvals['LOCATION']

@@ -100,6 +100,8 @@ def rmsExternal(cap_dir, arch_dir, config):
 
     myloc = os.path.split(os.path.abspath(__file__))[0]
     inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), config.stationID)
+    if not inifvals or inifvals['LOCATION']=='NOTCONFIGURED':
+        return False
     log.info('app home is {}'.format(myloc))
     domp4s = 0
     if 'DOMP4S' in inifvals:
@@ -190,7 +192,7 @@ if __name__ == '__main__':
     stationid = arch_dir.split('_')[0]
     myloc = os.path.split(os.path.abspath(__file__))[0]
     inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
-    if inifvals is None:
+    if not inifvals or inifvals['LOCATION']=='NOTCONFIGURED':
         print('ukmon ini file invalid - check LOCATION')
         exit(1)
     try:
