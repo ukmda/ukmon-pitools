@@ -80,6 +80,16 @@ def validateIni(homedir, newhelperip=None):
     return True
 
 
+def findLocationFromOldIni(stationid):
+    inif = os.path.expanduser('~/source/ukmon-pitools-{}/ukmon.ini'.format(stationid))
+    location = 'NOTCONFIGURED'
+    if os.path.isfile(inif):
+        flis = open(inif, 'r').readlines()
+        loc = [x for x in flis if 'LOCA' in x]
+        location = loc[0].strip().split('=')[1]
+    return location    
+
+
 def updateMp4andMag(inif, homedir):
     """
     Move the mp4 flag into the ini file and add the maglim flag if missing
