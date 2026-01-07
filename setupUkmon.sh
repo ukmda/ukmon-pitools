@@ -20,6 +20,7 @@ source ~/vRMS/bin/activate
 cd $here
 
 echo "refreshing toolset"
+git config pull.ff only 
 git stash 
 git pull
 git stash apply
