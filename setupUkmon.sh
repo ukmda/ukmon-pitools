@@ -36,7 +36,8 @@ if [ ! -f $here/cameras.ini ] ; then
     echo "# camera mapping file" > $here/cameras.ini
     echo "# echo add all cameras on this PC or Pi even if you only have one camera" >> $here/cameras.ini
     echo "[cameras]" >> $here/cameras.ini
-    echo "${CAMID}=NOTCONFIGURED" >> $here/cameras.ini
+    loc=$(python -c "from ukmonInstaller import findLocationFromOldIni;print(findLocationFromOldIni('$CAMID'))")
+    echo "${CAMID}=${loc}" >> $here/cameras.ini
 else
     grep $CAMID $here/cameras.ini > /dev/null 2>&1
     if [ $? == 1 ] ; then
@@ -67,6 +68,7 @@ pip list | grep paramiko || pip install paramiko
 # get the location code from the cameras.ini file
 LOCATION=$(grep $CAMID $here/cameras.ini)
 LOCATION=$(echo $LOCATION | awk -F "=" '{print $2}')
+
 
 # if the station is configured, retrieve the AWS keys and test connectivity. 
 if [[ "$LOCATION" != "NOTCONFIGURED"  && "$LOCATION" != "" ]] ; then
