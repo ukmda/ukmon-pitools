@@ -35,9 +35,11 @@ def test_readKeyFile():
 
 
 def test_createAndReadDefaultIni():
+    # this should succeed because there's no config file in ~/source/Stations/NOTREAL
+    # and so a default value of ~/source/RMS/.config should be used
     homedir = os.path.expanduser(os.path.join(basedir, 'output'))
     createDefaultIni(homedir)
-    vals = readIniFile(os.path.join(homedir,'ukmon.ini'), stationid='UK0006')
+    vals = readIniFile(os.path.join(homedir,'ukmon.ini'), stationid='NOTREAL')
     assert vals is not None
     os.remove(os.path.join(homedir,'ukmon.ini'))
     assert vals['RMSCFG'] == '~/source/RMS/.config'
