@@ -8,12 +8,11 @@ import datetime
 import logging
 import RMS.ConfigReader as cr
 from stat import ST_INO
-from uploadToArchive import readKeyFile, readIniFile, getLatestKeys
-from ukmonPostProc import setupLogging, versionid
+from uploadToArchive import readKeyFile, readIniFile
+from ukmonPostProc import setupLogging
 
 
 log = logging.getLogger("ukmonlogger")
-
 
 timetowait = 30 # seconds to wait for a new line before deciding the log is stale
 
@@ -48,21 +47,11 @@ def follow(fname, logf_ino):
             yield line.strip()
 
 
-def monitorLogFile(camloc, stationid=None):
+def monitorLogFile(camloc, rmscfg):
     """ This function monitors the latest RMS log file for meteor detections, convert the FF file
     to a jpg and upload it to the livestream.  
     This function is called from the shell script *liveMonitor.sh* and should not be called directly. 
     """
-    # get configuration
-    myloc = os.path.split(os.path.abspath(__file__))[0]
-    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
-    if not inifvals:
-        log.error('ukmon.ini not present, aborting')
-        exit(1)
-    rmscfg = inifvals['RMSCFG']
-    if not os.path.isfile(rmscfg):
-        log.error('rms config file', rmscfg,'not present, aborting')
-        exit(1)
     cfg = cr.parse(os.path.expanduser(rmscfg))
 
     datadir = cfg.data_dir
@@ -70,21 +59,23 @@ def monitorLogFile(camloc, stationid=None):
 
     setupLogging(logdir, 'ukmonlive_')
 
-    log.info('------------------------------------------')
-    log.info('    live feed started, version ' + versionid)
-    log.info('------------------------------------------')
+    log.info('--------------------------------')
+    log.info('    live feed started')
+    log.info('--------------------------------')
 
     log.info('Camera location is {}'.format(camloc))
     log.info('RMS config file is {}'.format(rmscfg))
 
+    myloc = os.path.split(os.path.abspath(__file__))[0]
+
     # get credentials
-    if not os.path.isfile(os.path.join(myloc, 'live.key')):
-        if not getLatestKeys(myloc, cfg.stationID):
-            print('unable to get key for', inifvals['LOCATION'])
-            exit(1)
+    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'))
+    if not inifvals:
+        log.error('ukmon.ini not present, aborting')
+        exit(1)
     keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
     if not keys:
-        log.error('unable to read AWS configuration, aborting')
+        log.error('config file not present, aborting')
         exit(1)
 
     keepon = True
@@ -151,8 +142,11 @@ def monitorLogFile(camloc, stationid=None):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print('usage: python liveMonitor.py {ukmon_location} {rms_id}')
+        print('LOCATION missing')
         exit(1)
+    if len(sys.argv) < 3:
+        rmscfg = os.path.expanduser('~/source/RMS/.config')
+    else:
+        rmscfg = sys.argv[2]
     camloc = sys.argv[1]
-    stationid = sys.argv[2] if len(sys.argv) > 2 else None
-    monitorLogFile(camloc, stationid)
+    monitorLogFile(camloc, rmscfg)
