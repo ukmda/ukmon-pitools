@@ -124,8 +124,8 @@ def relocateGitRepo():
             cfg = thisrepo.heads.dev.config_writer()
             cfg.set('remote','origin')
             cfg.release()
-        for remote in thisrepo.remotes:
-            remote.fetch()
+        for thisremote in thisrepo.remotes:
+            thisremote.fetch()
         print('git remote updated')
     return 
 
