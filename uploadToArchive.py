@@ -26,7 +26,7 @@ import tempfile
 from RMS.Formats.FTPdetectinfo import readFTPdetectinfo
 
 log = logging.getLogger("ukmonlogger")
-
+logging.getLogger("paramiko").setLevel(logging.WARNING)
 
 def readKeyFile(filename, inifvals):
     if not os.path.isfile(filename):
