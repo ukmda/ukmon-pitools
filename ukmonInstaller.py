@@ -126,6 +126,13 @@ def updateMp4andMag(inif, homedir):
     return
 
 
+def getLatestKeys(here):
+    # dummy function to avoid an error in refreshtools while
+    # the repo is being moved.
+    # the real function got moved to uploadToArchive to avoid circular imports
+    return
+
+
 def installUkmonFeed(rmscfg='~/source/RMS/.config'):
     """ 
     Installs the UKMon postprocessing script into the RMS config file.
