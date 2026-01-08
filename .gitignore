@@ -145,3 +145,4 @@ jsonToKeyFile.py
 tests/__pycache__
 tests/ukmarch/sampledata/*/FF*.jpg
 tests/ukmarch/sampledata/*/FF*.mp4
+cameras.ini

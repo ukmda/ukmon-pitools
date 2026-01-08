@@ -22,9 +22,14 @@ python -c "import ukmonInstaller as pp ; pp.validateIni('${here}', '3.11.55.160'
 source $here/ukmon.ini
 
 echo "refreshing toolset"
+git config pull.ff only 
 git stash 
 git pull
 git stash apply
+
+python -c "from ukmonInstaller import relocateGitRepo;relocateGitRepo()"
+git fetch
+git pull
 
 # creating an ssh key if not already present
 if [ ! -f  ${UKMONKEY} ] ; then 

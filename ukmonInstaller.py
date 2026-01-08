@@ -15,6 +15,7 @@ with warnings.catch_warnings():
 import json
 import tempfile
 import logging
+from git import Repo, remote
 
 import RMS.ConfigReader as cr
 from RMS.Misc import isRaspberryPi
@@ -107,6 +108,24 @@ def updateMp4andMag(inif, homedir):
     if 'MAGLIM' not in open(inif).read():
         open(inif,'a').write('export MAGLIM=1\n')
     return
+
+
+def relocateGitRepo():
+    myloc = os.path.split(os.path.abspath(__file__))[0]
+    thisrepo = Repo(myloc)
+    origin = thisrepo.remote('origin')
+    if 'markmac99' in origin.url:
+        origin.rename('upstream')
+        remote.Remote.add(thisrepo, 'origin','https://github.com/ukmda/ukmon-pitools.git')
+        cfg = thisrepo.heads.main.config_writer()
+        cfg.set('remote','origin')
+        cfg.release()
+        if 'dev' in thisrepo.branches:
+            cfg = thisrepo.heads.dev.config_writer()
+            cfg.set('remote','origin')
+            cfg.release()
+        print('git remote updated')
+    return 
 
 
 def updateHelperIp(homedir, helperip):
