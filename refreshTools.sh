@@ -28,8 +28,6 @@ git pull
 git stash apply
 
 python -c "from ukmonInstaller import relocateGitRepo;relocateGitRepo()"
-git fetch
-git pull
 
 # creating an ssh key if not already present
 if [ ! -f  ${UKMONKEY} ] ; then 
