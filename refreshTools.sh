@@ -22,6 +22,7 @@ python -c "import ukmonInstaller as pp ; pp.validateIni('${here}', '3.11.55.160'
 source $here/ukmon.ini
 
 echo "refreshing toolset"
+git config pull.rebase false
 git stash 
 git pull
 git stash apply
