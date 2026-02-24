@@ -8,13 +8,14 @@ import datetime
 import logging
 import RMS.ConfigReader as cr
 from stat import ST_INO
-from uploadToArchive import readKeyFile, readIniFile
-from ukmonPostProc import setupLogging
+from uploadToArchive import readKeyFile, readIniFile, getLatestKeys
+from ukmonPostProc import setupLogging, versionid
 
 
 log = logging.getLogger("ukmonlogger")
 
-timetowait = 300 # seconds to wait for a new line before deciding the log is stale
+
+timetowait = 30 # seconds to wait for a new line before deciding the log is stale
 
 # Images created more than this many seconds ago won't be uploaded. Prevents reuploads. 
 MAXAGE=int(os.getenv('UKMMAXAGE', default='1800')) 
@@ -47,11 +48,21 @@ def follow(fname, logf_ino):
             yield line.strip()
 
 
-def monitorLogFile(camloc, rmscfg):
+def monitorLogFile(camloc, stationid=None):
     """ This function monitors the latest RMS log file for meteor detections, convert the FF file
     to a jpg and upload it to the livestream.  
     This function is called from the shell script *liveMonitor.sh* and should not be called directly. 
     """
+    # get configuration
+    myloc = os.path.split(os.path.abspath(__file__))[0]
+    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
+    if not inifvals:
+        log.error('ukmon.ini not present, aborting')
+        exit(1)
+    rmscfg = inifvals['RMSCFG']
+    if not os.path.isfile(rmscfg):
+        log.error('rms config file', rmscfg,'not present, aborting')
+        exit(1)
     cfg = cr.parse(os.path.expanduser(rmscfg))
 
     datadir = cfg.data_dir
@@ -59,23 +70,21 @@ def monitorLogFile(camloc, rmscfg):
 
     setupLogging(logdir, 'ukmonlive_')
 
-    log.info('--------------------------------')
-    log.info('    live feed started')
-    log.info('--------------------------------')
+    log.info('------------------------------------------')
+    log.info('    live feed started, version ' + versionid)
+    log.info('------------------------------------------')
 
     log.info('Camera location is {}'.format(camloc))
     log.info('RMS config file is {}'.format(rmscfg))
 
-    myloc = os.path.split(os.path.abspath(__file__))[0]
-
     # get credentials
-    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'))
-    if not inifvals:
-        log.error('ukmon.ini not present, aborting')
-        exit(1)
+    if not os.path.isfile(os.path.join(myloc, 'live.key')):
+        if not getLatestKeys(myloc, cfg.stationID):
+            print('unable to get key for', inifvals['LOCATION'])
+            exit(1)
     keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
     if not keys:
-        log.error('config file not present, aborting')
+        log.error('unable to read AWS configuration, aborting')
         exit(1)
 
     keepon = True
@@ -90,7 +99,7 @@ def monitorLogFile(camloc, rmscfg):
                 logf = newlogf
                 log.info('Now monitoring {}'.format(logf))
             lis = open(logf,'r').readlines()
-            dd = [li for li in lis if 'Data directory' in li or 'New data directory' in li]
+            dd = [li for li in lis if 'Data directory' in li]
             if len(dd) > 0:
                 capdir = dd[0].split(' ')[5].strip()
                 #log.info('Capture dir is {}'.format(capdir))
@@ -100,7 +109,7 @@ def monitorLogFile(camloc, rmscfg):
             loglines = follow(logf, logf_ino)
 
             for line in loglines:
-                nowtm = datetime.datetime.now(datetime.timezone.utc)
+                nowtm = datetime.datetime.utcnow()
                 if line == 'log stale' or line == 'log rolled':
                     #log.info(line)
 
@@ -108,7 +117,6 @@ def monitorLogFile(camloc, rmscfg):
                     logfs.sort(key=lambda x: os.path.getmtime(x))
                     logf = logfs[-1]
                     loglines.close()
-                    raise StopIteration
                 else:
                     if "Data directory" in line or 'New data directory' in line: 
                         newcapdir = line.split(' ')[5].strip()
@@ -118,28 +126,24 @@ def monitorLogFile(camloc, rmscfg):
                             capdir = newcapdir
                             log.info('Latest capture dir is {}'.format(capdir))
 
-                    nowtm = datetime.datetime.now(datetime.timezone.utc)
+                    nowtm = datetime.datetime.utcnow()
                     if "detected meteors" in line and ": 0" not in line and "TOTAL" not in line:
-                        log.info('meteor detected')
                         if capdir != '':
                             ffname = line.split(' ')[3]
-                            ftime = datetime.datetime.strptime(ffname[10:25], '%Y%m%d_%H%M%S').replace(tzinfo=datetime.timezone.utc)
+                            ftime = datetime.datetime.strptime(ffname[10:25], '%Y%m%d_%H%M%S')
                             if (nowtm - ftime).seconds < MAXAGE:
                                 log.info('uploading {}'.format(ffname))
                                 uploadOneEvent(capdir, ffname, cfg, keys, camloc)
                             else:
-                                log.info(f'too long ago: {(nowtm - ftime).seconds}')
+                                #log.info('skipping {} as too old'.format(ffname))
                                 pass
-                        else:
-                            log.warning('cap dir not set')
-
+            #log.info('no more lines, rereading {}'.format(logf))
         except StopIteration:
-            # reload the latest log
+            log.info('restarting to read {}'.format(logf))
             pass
         except Exception as e:
             log.info('Problem reading RMS log: {} - will retry'.format(logf))
             log.info(e, exc_info=True)
-
             # reload the RMS config file in case its been updated
             cfg = cr.parse(os.path.expanduser(rmscfg))
             pass
@@ -147,11 +151,8 @@ def monitorLogFile(camloc, rmscfg):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print('LOCATION missing')
+        print('usage: python liveMonitor.py {ukmon_location} {rms_id}')
         exit(1)
-    if len(sys.argv) < 3:
-        rmscfg = os.path.expanduser('~/source/RMS/.config')
-    else:
-        rmscfg = sys.argv[2]
     camloc = sys.argv[1]
-    monitorLogFile(camloc, rmscfg)
+    stationid = sys.argv[2] if len(sys.argv) > 2 else None
+    monitorLogFile(camloc, stationid)
