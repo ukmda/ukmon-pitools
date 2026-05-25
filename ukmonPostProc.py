@@ -136,14 +136,17 @@ def rmsExternal(cap_dir, arch_dir, config):
     extrascrfn = os.path.join(myloc, 'extrascript')
     if os.path.isfile(extrascrfn):
         extrascript = open(extrascrfn,'r').readline().strip()
-        log.info('running additional script {:s}'.format(extrascript))
-        while len(log.handlers) > 0:
-            log.removeHandler(log.handlers[0])  
-        sloc, sname = os.path.split(extrascript)
-        sys.path.append(sloc)
-        scrname, _ = os.path.splitext(sname)
-        nextscr=impmod(scrname)
-        nextscr.rmsExternal(cap_dir, arch_dir, config)
+        if os.path.isfile(extrascript):
+            log.info('running additional script {:s}'.format(extrascript))
+            for handler in log.handlers[:]:
+                log.removeHandler(handler)
+            sloc, sname = os.path.split(extrascript)
+            sys.path.append(sloc)
+            scrname, _ = os.path.splitext(sname)
+            nextscr=impmod(scrname)
+            nextscr.rmsExternal(cap_dir, arch_dir, config)
+        else:
+            log.info('additional script {} not found'.format(extrascript))
     else:
         log.info('additional script not called')
         try:
@@ -154,8 +157,8 @@ def rmsExternal(cap_dir, arch_dir, config):
 
     log.info('done')
     # clear log handlers again
-    while len(log.handlers) > 0:
-        log.removeHandler(log.handlers[0])  
+    for handler in log.handlers[:]:
+        log.removeHandler(handler)
     return True
 
 

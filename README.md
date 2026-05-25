@@ -38,9 +38,10 @@ cd ukmon-pitools
 ./setupUkmon.sh  UKxxxxx
 ```
 * When prompted, copy the SSH public key.
-* Repeat the last step for each camera you have on this machine. So if you had three cameras, you'd run `setupUkmon.sh` three times and end up with three different SSH keys. 
-* Email the keys to newcamera@ukmeteornetwork.org, indicating which RMS ID each one relates to, your location (name of your town or village), and the rough direction your camera points in eg SW, S, ENE.
-* We will then send you ukmon IDs and instructions on how to finish the setup.
+* Repeat this for each camera you have on this machine. So if you had three cameras, you'd run `setupUkmon.sh` three times and end up with three different SSH keys. 
+* Email the keys to newcamera@ukmeteornetwork.org, indicating which RMS ID each key is for, plus your location (name of your town or village), and the rough direction each camera points in eg SW, S, ENE.
+
+* We will then add the keys to our server and send you ukmon IDs and instructions on how to finish the setup.
 
 HOW THE TOOLS WORK
 ==================
