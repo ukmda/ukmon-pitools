@@ -78,6 +78,7 @@ def rmsExternal(cap_dir, arch_dir, config):
 
     """
     setupLogging(os.path.join(config.data_dir, config.log_dir), f'ukmon_log_{config.stationID}_')
+    print('ukmon external script started, version ' + versionid)
     log.info('ukmon external script started, version ' + versionid)
     
     rebootlockfile = os.path.join(config.data_dir, config.reboot_lock_file)
@@ -135,7 +136,9 @@ def rmsExternal(cap_dir, arch_dir, config):
         sloc, sname = os.path.split(inifvals['EXTRASCRIPT'])
         sys.path.append(sloc)
         scrname, _ = os.path.splitext(sname)
+        log.info('about to import extl module')
         nextscr=impmod(scrname)
+        log.info('launching {} from {}'.format(scrname, sloc))
         nextscr.rmsExternal(cap_dir, arch_dir, config)
     else:
         log.info('additional script not called')
@@ -146,6 +149,7 @@ def rmsExternal(cap_dir, arch_dir, config):
             pass
 
     log.info('done')
+    print('done')
     # clear log handlers again
     for handler in log.handlers[:]:
         log.removeHandler(handler)
