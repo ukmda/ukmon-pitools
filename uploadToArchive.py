@@ -228,8 +228,15 @@ def readIniFile(filename, stationid):
             vals['UKMONKEY'] = '~/.ssh/ukmon_' + stationid.upper()
         if os.path.isfile(os.path.expanduser('~/source/Stations/' + stationid + '/.config')):
             vals['RMSCFG'] = os.path.expanduser('~/source/Stations/' + stationid + '/.config')
-    #if vals['LOCATION'] == 'NOTCONFIGURED':
-    #    return None
+    # make sure extrascript value is valid
+    if 'EXTRASCRIPT' in vals:
+        if not os.path.isfile(vals['EXTRASCRIPT']):
+            log.warning('extrascript {} not found - check ini'.format(vals['EXTRASCRIPT']))
+            vals['EXTRASCRIPT']=None
+        else:
+            pass # file exists so all ok
+    else:
+        vals['EXTRASCRIPT']=None
     return vals
 
 

@@ -128,23 +128,15 @@ def rmsExternal(cap_dir, arch_dir, config):
     # do not remove reboot lock file if running another script
     # os.remove(rebootlockfile)
     
-    extrascrfn = os.path.join(myloc, 'extrascript')
-    if os.path.isfile(extrascrfn):
-        # move the extrascript setting into the ukmon.ini file
-
-
-        extrascript = open(extrascrfn,'r').readline().strip()
-        if os.path.isfile(extrascript):
-            log.info('running additional script {:s}'.format(extrascript))
-            for handler in log.handlers[:]:
-                log.removeHandler(handler)
-            sloc, sname = os.path.split(extrascript)
-            sys.path.append(sloc)
-            scrname, _ = os.path.splitext(sname)
-            nextscr=impmod(scrname)
-            nextscr.rmsExternal(cap_dir, arch_dir, config)
-        else:
-            log.info('additional script {} not found'.format(extrascript))
+    if inifvals['EXTRASCRIPT']:
+        log.info('running additional script {:s}'.format(inifvals['EXTRASCRIPT']))
+        for handler in log.handlers[:]:
+            log.removeHandler(handler)
+        sloc, sname = os.path.split(inifvals['EXTRASCRIPT'])
+        sys.path.append(sloc)
+        scrname, _ = os.path.splitext(sname)
+        nextscr=impmod(scrname)
+        nextscr.rmsExternal(cap_dir, arch_dir, config)
     else:
         log.info('additional script not called')
         try:
