@@ -138,7 +138,8 @@ def updateExtrascript(inif, homedir):
     isxs = [x for x in lis if 'EXTRASCRIPT' in x]
     if len(isxs) == 0:
         lis.append('export EXTRASCRIPT={}\n'.format(extrascript))
-        open(inif,'w').writelines()
+        open(inif,'w').writelines(lis)
+        os.remove(os.path.join(homedir, 'extrascript'))
     return
 
 
