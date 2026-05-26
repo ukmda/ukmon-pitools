@@ -137,9 +137,9 @@ def rmsExternal(cap_dir, arch_dir, config):
         sloc, sname = os.path.split(inifvals['EXTRASCRIPT'])
         sys.path.append(sloc)
         scrname, _ = os.path.splitext(sname)
-        log.info('about to import extl module')
+        print('about to import extl module')
         nextscr=impmod(scrname)
-        log.info('launching {} from {}'.format(scrname, sloc))
+        print('launching {} from {}'.format(scrname, sloc))
         nextscr.rmsExternal(cap_dir, arch_dir, config)
     else:
         log.info('additional script not called')
