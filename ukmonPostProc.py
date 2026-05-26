@@ -15,6 +15,7 @@ import RMS.ConfigReader as cr
 from importlib import import_module as impmod
 import logging
 import datetime
+import argparse
 
 from uploadToArchive import uploadToArchive, readIniFile
 
@@ -177,28 +178,56 @@ def manualRerun(dated_dir, rmscfg = '~/source/RMS/.config'):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print('usage: python ukmonPostProc.py arc_dir_name')
-        print('eg python ukmonPostProc.py UK0006_20210312_183741_206154')
-        exit(0)
+    arg_parser = argparse.ArgumentParser(description="Run ukmon postprocessing script.")
+    arg_parser.add_argument('-d', '--dir_path', nargs=1, metavar='DIR_PATH', type=str,
+        help='Path to CapturedFiles folder to process. Defaults to latest.')
+
+    arg_parser.add_argument( '-c', '--config', nargs=1, metavar='CONFIG_PATH', type=str,
+        help="Path to the RMS config file. Defaults to working it out from dir_path")
     
-    arch_dir = sys.argv[1]
-    if 'ConfirmedFiles' in arch_dir or 'ArchivedFiles' in arch_dir or 'CapturedFiles' in arch_dir:
-        _, arch_dir = os.path.split(arch_dir)
-    stationid = arch_dir.split('_')[0]
-    myloc = os.path.split(os.path.abspath(__file__))[0]
-    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
-    if not inifvals or inifvals['LOCATION']=='NOTCONFIGURED':
-        print('ukmon ini file invalid - check LOCATION')
+    arg_parser.add_argument( '-t', '--toolcfg', nargs=1, metavar='TOOL_CFG_PATH', type=str,
+        help="Path to the ukmon config file. Defaults to loading ukmon.ini from current directory.")
+    
+    cml_args = arg_parser.parse_args()
+
+    if not cml_args.config and not cml_args.dir_path:
+        print('Must supply either --dir_path or --config parameters or both')
         exit(1)
-    try:
-        rmscfg = inifvals['RMSCFG']
-    except Exception:
-        rmscfg='~/source/RMS/.config'
-    try:
-        print('RMS config read from {}'.format(rmscfg))
-        ret = manualRerun(arch_dir, rmscfg)
-        exit(0)
-    except Exception:
-        print('unable to call manualRerun')
-        exit(1)
+
+    if cml_args.config:
+        rms_cfg_file = cml_args.config
+    else:
+        rms_cfg_file = [os.path.expanduser('~/source/RMS/.config')]
+    rmscfg = cr.loadConfigFromDirectory(rms_cfg_file, 'notused')
+    stationId = rmscfg.stationID
+    if stationId == 'XX0001':
+        print(f'Station not configured in {rms_cfg_file}')
+
+    datadir = rmscfg.data_dir
+    if cml_args.dir_path:
+        targdir = cml_args.dir_path[0]
+        lastcap = os.path.normpath(os.path.expanduser(targdir))
+        if not os.path.isdir(lastcap):
+            testpth = os.path.expanduser(os.path.join(datadir, 'CapturedFiles', f'*{targdir}*'))
+            capdirs = glob.glob(testpth)
+            if len(capdirs) == 0:
+                print(f'Capture folder {cml_args.dir_path[0]} not found')
+                exit(1)
+            else:
+                capdirs.sort()
+                lastcap = capdirs[-1]
+    else:
+        capdir = os.path.expanduser(os.path.join(datadir, 'CapturedFiles'))
+        recentcaps = os.listdir(capdir)
+        recentcaps.sort()
+        if len(recentcaps) >0:
+            lastcap = recentcaps[-1]
+        else:
+            print(f'no captured data in {capdir}')
+            exit(0)
+    lastcap = os.path.split(lastcap)[1]
+
+    cap_dir = os.path.join(datadir, 'CapturedFiles', lastcap)
+    arch_dir = os.path.join(datadir, 'ArchivedFiles', lastcap)
+    print(f'processing {lastcap}')
+    rmsExternal(cap_dir, arch_dir, rmscfg)
