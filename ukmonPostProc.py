@@ -3,11 +3,6 @@
 # and upload data to the uk meteor data archive
 # Copyright (C) 2018-2023 Mark McIntyre
 #
-# Notes: 
-# - to enable MP4 creation of each detection, create a file 'domp4s' in the same folder as this script
-# - to enable creation of an all-night timelapse, create a file 'dotimelapse'
-# - to trigger another python script after this one, create a file 'extrascript' containing the full path 
-#   to the extra script. The script will be passed the same arguments as this one (cap_dir, arc_dir, config)
 
 import os
 import sys
@@ -135,6 +130,9 @@ def rmsExternal(cap_dir, arch_dir, config):
     
     extrascrfn = os.path.join(myloc, 'extrascript')
     if os.path.isfile(extrascrfn):
+        # move the extrascript setting into the ukmon.ini file
+
+
         extrascript = open(extrascrfn,'r').readline().strip()
         if os.path.isfile(extrascript):
             log.info('running additional script {:s}'.format(extrascript))

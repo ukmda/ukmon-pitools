@@ -25,7 +25,7 @@ log = logging.getLogger("ukmonlogger")
 log.setLevel(logging.WARNING)
 
 oldip = '3.9.65.98'
-currip = '3.11.55.160'
+currip = 'batchserver.ukmeteors.co.uk'
 
 
 def createDefaultIni(homedir, helperip='3.11.55.160', location='NOTCONFIGURED', stationid=''):
@@ -78,6 +78,7 @@ def validateIni(homedir, newhelperip=None):
     if helperip == oldip:
         updateHelperIp(homedir, newhelperip)
     updateMp4andMag(inifname, homedir)
+    updateExtrascript(inifname, homedir)
     return True
 
 
@@ -123,6 +124,21 @@ def updateMp4andMag(inif, homedir):
         open(inif,'a').write('export DOMP4S={}\n'.format(domp4s))
     if 'MAGLIM' not in open(inif).read():
         open(inif,'a').write('export MAGLIM=1\n')
+    return
+
+
+def updateExtrascript(inif, homedir):
+    """
+    Move the extra scripot into the ini file 
+    """
+    extrascript = ''
+    if os.path.isfile(os.path.join(homedir, 'extrascript')):
+        extrascript = open(os.path.join(homedir, 'extrascript'),'r').readline().strip()
+    lis = open(inif,'r').readlines()
+    isxs = [x for x in lis if 'EXTRASCRIPT' in x]
+    if len(isxs) == 0:
+        lis.append('export EXTRASCRIPT={}\n'.format(extrascript))
+        open(inif,'w').writelines()
     return
 
 
