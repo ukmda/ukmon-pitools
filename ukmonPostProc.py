@@ -30,7 +30,7 @@ def setupLogging(logpath, prefix):
     print('about to initialise logger')
     logdir = os.path.expanduser(logpath)
     os.makedirs(logdir, exist_ok=True)
-    log.info('removing any existing log handlers')
+    print('removing any existing log handlers')
     for handler in log.handlers[:]:
         log.removeHandler(handler)
 
@@ -132,14 +132,12 @@ def rmsExternal(cap_dir, arch_dir, config):
     
     if inifvals['EXTRASCRIPT']:
         log.info('running additional script {:s}'.format(inifvals['EXTRASCRIPT']))
-        for handler in log.handlers[:]:
-            log.removeHandler(handler)
         sloc, sname = os.path.split(inifvals['EXTRASCRIPT'])
         sys.path.append(sloc)
         scrname, _ = os.path.splitext(sname)
         print('about to import extl module')
         nextscr=impmod(scrname)
-        print('launching {} from {}'.format(scrname, sloc))
+        log.info('launching {} from {}'.format(scrname, sloc))
         nextscr.rmsExternal(cap_dir, arch_dir, config)
     else:
         log.info('additional script not called')
@@ -155,26 +153,6 @@ def rmsExternal(cap_dir, arch_dir, config):
     for handler in log.handlers[:]:
         log.removeHandler(handler)
     return True
-
-
-def manualRerun(dated_dir, rmscfg = '~/source/RMS/.config'):
-    """This function is used to manually rerun the Ukmon post processing script.  
-    To invoke this function, open a Terminal window and run the following:  
-
-    *python ../ukmon-pitools/ukmonPostProc.py dated_dir*  
-
-    Args:
-        dated_dir (str): The name of the folder to upload eg UK000F_20210512_202826_913898  
-
-    """
-    config = cr.parse(os.path.expanduser(rmscfg))
-    cap_dir = os.path.join(config.data_dir, 'CapturedFiles', dated_dir)
-    if not os.path.isdir(cap_dir):
-        return False
-    arch_dir = os.path.join(config.data_dir, 'ArchivedFiles', dated_dir)
-    if not os.path.isdir(arch_dir):
-        return False
-    return rmsExternal(cap_dir, arch_dir, config)
 
 
 if __name__ == '__main__':
