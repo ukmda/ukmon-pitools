@@ -127,26 +127,25 @@ def rmsExternal(cap_dir, arch_dir, config):
     log.info('uploading remaining files to archive')
     uploadToArchive(arch_dir, config.stationID, keys=keys)
 
-    # do not remove reboot lock file if running another script
-    # os.remove(rebootlockfile)
-    
     if inifvals['EXTRASCRIPT']:
-        log.info('running additional script {:s}'.format(inifvals['EXTRASCRIPT']))
-        sloc, sname = os.path.split(inifvals['EXTRASCRIPT'])
-        sys.path.append(sloc)
-        scrname, _ = os.path.splitext(sname)
-        print('about to import extl module')
-        nextscr=impmod(scrname)
-        log.info('launching {} from {}'.format(scrname, sloc))
-        nextscr.rmsExternal(cap_dir, arch_dir, config)
+        try:
+            log.info('running additional script {:s}'.format(inifvals['EXTRASCRIPT']))
+            sloc, sname = os.path.split(inifvals['EXTRASCRIPT'])
+            sys.path.append(sloc)
+            scrname, _ = os.path.splitext(sname)
+            print('about to import extl module')
+            log.info('about to import extl module')
+            nextscr=impmod(scrname)
+            log.info('launching {} from {}'.format(scrname, sloc))
+            nextscr.rmsExternal(cap_dir, arch_dir, config)
+        except Exception as e:
+            log.warning('problem calling external script')
+            log.warning(e)
     else:
         log.info('additional script not called')
-        try:
-            os.remove(rebootlockfile)
-        except Exception:
-            log.info('unable to remove reboot lock file, pi will not reboot')
-            pass
 
+    if os.path.isfile(rebootlockfile):
+        os.remove(rebootlockfile)
     log.info('done')
     print('done')
     # clear log handlers again
