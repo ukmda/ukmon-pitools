@@ -146,8 +146,8 @@ def rmsExternal(cap_dir, arch_dir, config):
 
     if os.path.isfile(rebootlockfile):
         os.remove(rebootlockfile)
-    log.info('done')
-    print('done')
+    log.info('ukmon done')
+    print('ukmon done')
     # clear log handlers again
     for handler in log.handlers[:]:
         log.removeHandler(handler)
