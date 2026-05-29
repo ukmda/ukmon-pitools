@@ -60,11 +60,7 @@ DOMP4S=1
 ```
 Running an Additional Script of your own
 ----------------------------------------
-If you want to run an additional Python script after this one finishes, create a file named "extrascript"  in the same folder, containing a single line with the full path to the script. For example to enable the feed to istrastream, you could open a Terminal window and type the following:  
-``` bash
-echo "$HOME/source/mystuff/myscript.py" > $HOME/source/ukmon-pitools/extrascript  
-```
-This should create file called 'extrascript' in the ukmon-pitools folder, containing one line "$HOME/source/mystuff/myscript.py"
+If you want to run an additional Python script after this one finishes, update the config file's EXTRASCRIPT with the full path and name of the python script.
 
 The script must contain a function rmsExternal with the following definition
 ``` python
