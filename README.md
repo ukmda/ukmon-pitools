@@ -21,7 +21,7 @@ git clone https://github.com/ukmda/ukmon-pitools.git
 #### Single-station Configuration 
 Open a terminal window and type the following, replacing UKxxxxx with your RMS camera ID eg UK12345
 ``` bash
-cd ukmon-pitools  
+cd $HOME/source/ukmon-pitools  
 ./setupUkmon.sh  UKxxxxx
 ```
 * When prompted, copy the SSH public key. 
