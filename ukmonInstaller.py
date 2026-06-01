@@ -122,13 +122,13 @@ def updateMp4andMag(inif, homedir):
     domp4s = 0
     if os.path.isfile(os.path.join(homedir, 'domp4s')):
         domp4s = 1
+        os.remove(os.path.join(homedir, 'domp4s'))
 
     lis = open(inif,'r').readlines()
     isxs = [x for x in lis if 'DOMP4S' in x]
     if len(isxs) == 0:
         lis.append('export DOMP4S={}\n'.format(domp4s))
         open(inif,'w').writelines(lis)
-        os.remove(os.path.join(homedir, 'domp4s'))
 
     isxs = [x for x in lis if 'MAGLIM' in x]
     if len(isxs) == 0:
