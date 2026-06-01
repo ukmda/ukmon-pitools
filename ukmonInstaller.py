@@ -46,6 +46,7 @@ def createDefaultIni(homedir, helperip='3.11.55.160', location='NOTCONFIGURED', 
         outf.write("export RMSCFG={}\n".format(rmscfg))
         outf.write('export DOMP4s=1\n')
         outf.write('export MAGLIM=1\n')
+        outf.write('export EXTRASCRIPT=\n')
     return True
 
 
@@ -114,22 +115,31 @@ def updateMp4andMag(inif, homedir):
     """
     Move the mp4 flag into the ini file and add the maglim flag if missing
     """
-    domp4s = 0
+    # make sure last line ends in newline
     if open(inif, 'r').read()[-1] != '\n':
         open(inif, 'a').write('\n')
+
+    domp4s = 0
     if os.path.isfile(os.path.join(homedir, 'domp4s')):
         domp4s = 1
+
+    lis = open(inif,'r').readlines()
+    isxs = [x for x in lis if 'DOMP4S' in x]
+    if len(isxs) == 0:
+        lis.append('export DOMP4S={}\n'.format(domp4s))
+        open(inif,'w').writelines(lis)
         os.remove(os.path.join(homedir, 'domp4s'))
-    if 'DOMP4S' not in open(inif).read():
-        open(inif,'a').write('export DOMP4S={}\n'.format(domp4s))
-    if 'MAGLIM' not in open(inif).read():
-        open(inif,'a').write('export MAGLIM=1\n')
+
+    isxs = [x for x in lis if 'MAGLIM' in x]
+    if len(isxs) == 0:
+        lis.append('export MAGLIM=1\n')
+        open(inif,'w').writelines(lis)
     return
 
 
 def updateExtrascript(inif, homedir):
     """
-    Move the extra scripot into the ini file 
+    Move the extra script into the ini file 
     """
     extrascript = ''
     if os.path.isfile(os.path.join(homedir, 'extrascript')):

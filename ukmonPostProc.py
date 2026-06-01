@@ -20,8 +20,8 @@ import argparse
 from uploadToArchive import uploadToArchive, readIniFile
 
 
-log = logging.getLogger("ukmonlogger")
-log.setLevel(logging.INFO)
+ukmlog = logging.getLogger("ukmonlogger")
+ukmlog.setLevel(logging.INFO)
 
 versionid = '2026.01.04'
 
@@ -30,9 +30,10 @@ def setupLogging(logpath, prefix):
     print('about to initialise logger')
     logdir = os.path.expanduser(logpath)
     os.makedirs(logdir, exist_ok=True)
-    print('removing any existing log handlers')
-    for handler in log.handlers[:]:
-        log.removeHandler(handler)
+    #print('removing any existing log handlers')
+    #for handler in ukmlog.handlers[:]:
+    #    ukmlog.removeHandler(handler)
+    #    handler.close()
 
     logfilename = os.path.join(logdir, prefix + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d_%H%M%S.%f') + '.log')
     handler = logging.handlers.TimedRotatingFileHandler(logfilename, when='D', interval=1) 
@@ -40,20 +41,20 @@ def setupLogging(logpath, prefix):
     formatter = logging.Formatter(fmt='%(asctime)s-%(levelname)s-%(module)s-line:%(lineno)d - %(message)s', 
         datefmt='%Y/%m/%d %H:%M:%S')
     handler.setFormatter(formatter)
-    log.addHandler(handler)
+    ukmlog.addHandler(handler)
 
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.WARNING)
     formatter = logging.Formatter(fmt='%(asctime)s-%(levelname)s-%(module)s-line:%(lineno)d - %(message)s', 
         datefmt='%Y/%m/%d %H:%M:%S')
     ch.setFormatter(formatter)
-    log.addHandler(ch)
+    ukmlog.addHandler(ch)
 
-    log.setLevel(logging.INFO)
+    ukmlog.setLevel(logging.INFO)
 
     purgeOldLogs(logdir, prefix)
 
-    log.info('logging initialised')
+    ukmlog.info('logging initialised')
     return 
 
 
@@ -61,7 +62,7 @@ def purgeOldLogs(logdir, logpref, days=30):
     reftime = time.time() - 86400*days
     for logf in glob.glob(os.path.join(logdir, logpref + '*.log*')):
         if os.path.getmtime(logf) < reftime:
-            log.debug('removing old log', logf)
+            ukmlog.debug('removing old log', logf)
             os.remove(logf)
     return 
 
@@ -80,16 +81,16 @@ def rmsExternal(cap_dir, arch_dir, config):
     """
     setupLogging(os.path.join(config.data_dir, config.log_dir), f'ukmon_log_{config.stationID}_')
     print('ukmon external script started, version ' + versionid)
-    log.info('ukmon external script started, version ' + versionid)
+    ukmlog.info(f'ukmon external script started, version {versionid}')
     
     rebootlockfile = os.path.join(config.data_dir, config.reboot_lock_file)
     with open(rebootlockfile, 'w') as f:
         f.write('1')
 
-    log.info('uploading key science files to archive')
+    ukmlog.info('uploading key science files to archive')
     keys = uploadToArchive(arch_dir, config.stationID, sciencefiles=True)
     # create jpgs from the potential detections
-    log.info('creating JPGs')
+    ukmlog.info('creating JPGs')
     try:
         bff2i.batchFFtoImage(arch_dir, 'jpg', True)
     except Exception:
@@ -99,15 +100,10 @@ def rmsExternal(cap_dir, arch_dir, config):
     inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), config.stationID)
     if not inifvals or inifvals['LOCATION']=='NOTCONFIGURED':
         return False
-    log.info('app home is {}'.format(myloc))
-    domp4s = 0
-    if 'DOMP4S' in inifvals:
-        domp4s = int(inifvals['DOMP4S'])
-    elif os.path.isfile(os.path.join(myloc, 'domp4s')):
-        domp4s = 1
-    if domp4s == 1: 
+    ukmlog.info('app home is {}'.format(myloc))
+    if 'DOMP4S' in inifvals and int(inifvals['DOMP4S']) == 1: 
         # generate MP4s of detections
-        log.info('generating MP4s')
+        ukmlog.info('generating MP4s')
         ftpdate=''
         if os.path.split(arch_dir)[1] == '':
             ftpdate=os.path.split(os.path.split(arch_dir)[0])[1]
@@ -122,35 +118,36 @@ def rmsExternal(cap_dir, arch_dir, config):
         except Exception:
             gmp4.generateMP4s(arch_dir, ftpfile_name)
     else:
-        log.info('mp4 creation not enabled')
+        ukmlog.info('mp4 creation not enabled')
     
-    log.info('uploading remaining files to archive')
+    ukmlog.info('uploading remaining files to archive')
     uploadToArchive(arch_dir, config.stationID, keys=keys)
 
     if inifvals['EXTRASCRIPT']:
         try:
-            log.info('running additional script {:s}'.format(inifvals['EXTRASCRIPT']))
+            ukmlog.info('running additional script {:s}'.format(inifvals['EXTRASCRIPT']))
             sloc, sname = os.path.split(inifvals['EXTRASCRIPT'])
             sys.path.append(sloc)
             scrname, _ = os.path.splitext(sname)
             print('about to import extl module')
-            log.info('about to import extl module')
+            ukmlog.info('about to import extl module')
             nextscr=impmod(scrname)
-            log.info('launching {} from {}'.format(scrname, sloc))
+            ukmlog.info('launching {} from {}'.format(scrname, sloc))
             nextscr.rmsExternal(cap_dir, arch_dir, config)
         except Exception as e:
-            log.warning('problem calling external script')
-            log.warning(e)
+            ukmlog.warning('problem calling external script')
+            ukmlog.warning(e)
     else:
-        log.info('additional script not called')
+        ukmlog.info('additional script not called')
 
     if os.path.isfile(rebootlockfile):
         os.remove(rebootlockfile)
-    log.info('ukmon done')
+    ukmlog.info('ukmon done')
     print('ukmon done')
     # clear log handlers again
-    for handler in log.handlers[:]:
-        log.removeHandler(handler)
+    #for handler in ukmlog.handlers[:]:
+    #    ukmlog.removeHandler(handler)
+    #    handler.close()
     return True
 
 

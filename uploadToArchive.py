@@ -237,6 +237,10 @@ def readIniFile(filename, stationid):
             pass # file exists so all ok
     else:
         vals['EXTRASCRIPT']=None
+    if 'DOMP4S' not in vals:
+        vals['DOMP4S'] = 1
+    if 'MAGLIM' not in vals:
+        vals['MAGLIM'] = 1
     return vals
 
 
