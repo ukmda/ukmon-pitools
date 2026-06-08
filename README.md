@@ -50,14 +50,11 @@ ukmonPostProc.py
 ================
 This uses the RMS post-processing hook to creates JPGs and other data, then upload to the UK Meteor Network archive. The script has three optional capabilities: 
 
-
 MP4s
 ------------------
 The script can create MP4s of each detection.
-To enable these, edit ukmon.ini and set DOMP4S to 1
-``` bash
-DOMP4S=1
-```
+To enable these, edit ukmon.ini and set DOMP4S to 1. 
+
 Running an Additional Script of your own
 ----------------------------------------
 If you want to run an additional Python script after this one finishes, update the config file's EXTRASCRIPT with the full path and name of the python script.
