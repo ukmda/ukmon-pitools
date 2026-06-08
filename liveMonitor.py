@@ -68,7 +68,7 @@ def monitorLogFile(camloc, stationid=None):
     datadir = cfg.data_dir
     logdir = os.path.expanduser(os.path.join(datadir, cfg.log_dir))
 
-    setupLogging(logdir, 'ukmonlive_')
+    setupLogging(logdir, 'ukmonlive_{}_'.format(cfg.stationID))
 
     log.info('------------------------------------------')
     log.info('    live feed started, version ' + versionid)
