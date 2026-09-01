@@ -35,7 +35,7 @@ def getBlockBrightness(dirpath, filename):
     return {'max':maxInten, 'avg':avgInten, 'std':stdInten, 'frNo':maxFr}
 
 
-def createXMLfile(tmpdir, cap_dir, dir_file, camloc, cfg):
+def createXMLfile(fullxml, cap_dir, dir_file, camloc, cfg):
     camid = cfg.stationID
     briInfo = getBlockBrightness(cap_dir, dir_file)
     spls = dir_file.split('_')
@@ -49,8 +49,6 @@ def createXMLfile(tmpdir, cap_dir, dir_file, camloc, cfg):
     hr = hms[:2]
     mi = hms[2:4]
     se = '{}.{}'.format(hms[4:6], millis)
-    xmlname = 'M' + ymd + '_' + hms + '_' + camloc + '_' + camid + '.xml'
-    fullxml = os.path.join(tmpdir, xmlname)
     with open(fullxml, 'w') as ofl:
         ofl.write('<?xml version="1.0" encoding="UTF-8" ?>\n')
         ofl.write('<ufocapture_record version="215" ')
@@ -67,7 +65,7 @@ def createXMLfile(tmpdir, cap_dir, dir_file, camloc, cfg):
         ofl.write('     <uc_path fno="{}" ono="18" pixel="16" bmax="{}" x="391.1" y="295.5"></uc_path>\n'.format(briInfo['frNo']+2, briInfo['std']))
         ofl.write('    </ufocapture_paths>\n')
         ofl.write('</ufocapture_record>\n')
-    return fullxml, xmlname
+    return 
 
 
 def createJpg(tmpdir, cap_dir, dir_file, camloc):
@@ -83,12 +81,8 @@ def createJpg(tmpdir, cap_dir, dir_file, camloc):
         bff.batchFFtoImage(tmpdir, 'jpg')
     file_name, _ = os.path.splitext(dir_file)
     ojpgname = file_name + '.jpg'
-    njpgname = 'M' + ymd + '_' + hms + '_' + camloc + '_' + camid + 'P.jpg'
-    fulljpg = os.path.join(tmpdir, njpgname)
-    if os.path.isfile(fulljpg):
-        os.remove(fulljpg)
-    os.rename(os.path.join(tmpdir, ojpgname), fulljpg)
-    return fulljpg, njpgname
+    fulljpg = os.path.join(tmpdir, ojpgname)
+    return fulljpg, ojpgname
 
 
 def uploadOneEvent(cap_dir, dir_file, cfg, keys, camloc):
@@ -102,14 +96,16 @@ def uploadOneEvent(cap_dir, dir_file, cfg, keys, camloc):
         retmsg = '{} not present in {}'.format(dir_file, cap_dir)
         log.warning(retmsg)
         return retmsg
-    fulljpg, njpgname = createJpg(tmpdir, cap_dir, dir_file, camloc) 
-    fullxml, xmlname = createXMLfile(tmpdir, cap_dir, dir_file, camloc, cfg)
+    fulljpg, jpgname = createJpg(tmpdir, cap_dir, dir_file, camloc) 
+    fullxml = fulljpg.replace('.jpg','.xml')
+    xmlname = jpgname.replace('.jpg','.xml')
+    createXMLfile(fullxml, cap_dir, dir_file, camloc, cfg)
     try: 
-        s3mda.meta.client.upload_file(fulljpg, mdabuck, njpgname, ExtraArgs={'ContentType': 'image/jpeg'})
         s3mda.meta.client.upload_file(fullxml, mdabuck, xmlname, ExtraArgs={'ContentType': 'application/xml'})
-        retmsg = 'upload of {} successful'.format(njpgname)
+        s3mda.meta.client.upload_file(fulljpg, mdabuck, jpgname, ExtraArgs={'ContentType': 'image/jpeg'})
+        retmsg = 'upload of {} successful'.format(jpgname)
     except Exception as e:
-        retmsg = 'unable to upload to {}'.format(mdabuck)
+        retmsg = 'unable to upload {} to {}'.format(jpgname, mdabuck)
         log.warning(retmsg)
         log.info(e, exc_info=True)
     sys.stdout.flush()
