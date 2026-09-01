@@ -1,4 +1,11 @@
 {
     "restructuredtext.confPath": "${workspaceFolder}\\docs",
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "python-envs.pythonProjects": [
+        {
+            "path": ".",
+            "envManager": "ms-python.python:conda",
+            "packageManager": "ms-python.python:conda"
+        }
+    ]
 }
