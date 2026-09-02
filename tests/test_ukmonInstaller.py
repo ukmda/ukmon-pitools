@@ -10,7 +10,7 @@ myloc = os.path.split(os.path.abspath(__file__))[0]
 homedir = os.path.join(myloc, 'ukminst')
 tmpdir = os.path.join(myloc, 'output')
 if not os.path.isdir(tmpdir):
-    os.makedirs(tmpdir) # , exist_ok=Truee) exist_ok keyword not supported  with python7.2
+    os.makedirs(tmpdir, exist_ok=True)
 
 
 def test_createDefaultIni():
@@ -88,7 +88,8 @@ def test_checkPostProcSettings():
 
 def test_getLatestKeys_normal():
     shutil.copyfile(os.path.join(myloc, '../ukmon.ini'),os.path.join(homedir,'ukmon.ini'))
-    updateHelperIp(homedir, helperip='3.11.55.160')
+    updateHelperIp(homedir, helperip='batchserver.ukmeteors.co.uk')
+    updateLocation(homedir, 'testpi4')
     res = getLatestKeys(homedir)
     assert res is True
     os.remove(os.path.join(homedir, 'ukmon.ini'))
@@ -98,6 +99,7 @@ def test_getLatestKeys_normal():
 def test_getLatestKeys_newname():
     shutil.copyfile(os.path.join(myloc, '../ukmon.ini'),os.path.join(homedir,'ukmon.ini'))
     updateHelperIp(homedir, helperip='batchserver.ukmeteors.co.uk')
+    updateLocation(homedir, 'testpi4')
     remoteinifname = 'ukmon.ini.newname'
     res = getLatestKeys(homedir, remoteinifname=remoteinifname)
     assert res is True
@@ -113,6 +115,7 @@ def test_getLatestKeys_newname():
 def test_getLatestKeys_newip():
     shutil.copyfile(os.path.join(myloc, '../ukmon.ini'),os.path.join(homedir,'ukmon.ini'))
     updateHelperIp(homedir, helperip='batchserver.ukmeteors.co.uk')
+    updateLocation(homedir, 'testpi4')
     remoteinifname = 'ukmon.ini.newip'
     res = getLatestKeys(homedir, remoteinifname=remoteinifname)
     assert res is True
