@@ -121,13 +121,14 @@ def testFeed(keys, cfg):
                             aws_secret_access_key=keys['AWS_SECRET_ACCESS_KEY'], region_name=keys['AWS_DEFAULT_REGION'])
     s3mda = mdaconn.resource('s3')
     mdabuck = keys['LIVEBUCKET'].replace('ukmon','ukmda')
+    testfile = os.path.join(os.getenv('TMP', default='/tmp'),'test.txt')
     try:
-        s3mda.meta.client.upload_file('/tmp/test.txt', mdabuck, 'test/{}_{}.txt'.format(keys['CAMLOC'], camid))
+        s3mda.meta.client.upload_file(testfile, mdabuck, 'test/{}_{}.txt'.format(keys['CAMLOC'], camid))
         retmsg = 'test successful'
     except Exception:
         retmsg = 'unable to upload to {} - check key information'.format(mdabuck)
     try:
-        os.remove('/tmp/test.txt')
+        os.remove(testfile)
     except Exception:
         pass
     return retmsg

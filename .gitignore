@@ -146,3 +146,5 @@ tests/__pycache__
 tests/ukmarch/sampledata/*/FF*.jpg
 tests/ukmarch/sampledata/*/FF*.mp4
 cameras.ini
+tests/container/keys/testpi4
+tests/container/keys/.config
