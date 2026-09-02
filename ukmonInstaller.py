@@ -28,7 +28,7 @@ oldip = '3.9.65.98'
 currip = 'batchserver.ukmeteors.co.uk'
 
 
-def createDefaultIni(homedir, helperip='3.11.55.160', location='NOTCONFIGURED', stationid=''):
+def createDefaultIni(homedir, helperip='batchserver.ukmeteors.co.uk', location='NOTCONFIGURED', stationid=''):
     """
     Create a default ini file, if its not present on the target
     """
@@ -153,7 +153,7 @@ def updateExtrascript(inif, homedir):
     return
 
 
-def getLatestKeys(here):
+def getLatestKeys(homedir, stationid, remoteinifname=None):
     # dummy function to avoid an error in refreshtools while
     # the repo is being moved.
     # the real function got moved to uploadToArchive to avoid circular imports

@@ -197,7 +197,7 @@ def getAWSKey(inifvals):
 def readIniFile(filename, stationid):
     myloc = os.path.dirname(filename)
     camerafile = os.path.join(myloc,'cameras.ini')
-    if not os.path.isfile(camerafile):
+    if not os.path.isfile(camerafile) or not stationid:
         location = None
     else:
         stations = getListOfStations(myloc)

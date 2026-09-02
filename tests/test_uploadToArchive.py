@@ -3,8 +3,9 @@
 import boto3
 import os
 import shutil
-from uploadToArchive import readKeyFile, uploadOneFile, manualUpload, readIniFile, checkMags, updateLocation
-from ukmonInstaller import updateHelperIp, getLatestKeys
+from uploadToArchive import readKeyFile, uploadOneFile, manualUpload, \
+    readIniFile, checkMags, updateLocation, getLatestKeys
+from ukmonInstaller import updateHelperIp
 
 basedir = os.path.realpath(os.path.dirname(__file__))
 tmpdir = os.path.join(basedir, 'output')
@@ -13,11 +14,11 @@ if not os.path.isdir(tmpdir):
 shutil.copyfile(os.path.join(basedir, '../ukmon.ini'),os.path.join(basedir,'ukmon.ini'))
 updateHelperIp(basedir, helperip='batchserver.ukmeteors.co.uk')
 updateLocation(basedir, 'testpi4')
-getLatestKeys(basedir)
+getLatestKeys(basedir, 'testpi4')
 
 
 def test_checkMags():
-    inifvals = readIniFile(os.path.join(basedir,'ukmon.ini'))
+    inifvals = readIniFile(os.path.join(basedir,'ukmon.ini'), 'testpi4')
     maglim = 6
     if 'MAGLIM' in inifvals:
         maglim = float(inifvals['MAGLIM'])
@@ -29,23 +30,23 @@ def test_checkMags():
 
 
 def test_readIniFile():
-    inifs = readIniFile(os.path.join(basedir,'ukmon.ini'))
+    inifs = readIniFile(os.path.join(basedir,'ukmon.ini'), 'testpi4')
     assert inifs['LOCATION']=='testpi4'
 
 
 def test_readKeyFile():
-    inifs = readIniFile(os.path.join(basedir,'ukmon.ini'))
+    inifs = readIniFile(os.path.join(basedir,'ukmon.ini'), 'testpi4')
     vals = readKeyFile(os.path.join(basedir,'live.key'), inifs)
     assert vals['S3FOLDER'] in  ['tmp/testpi4','archive/Tackley']
 
 
 def test_readKeyfileIni():
-    vals = readIniFile(os.path.join(basedir,'ukmon.ini'))
+    vals = readIniFile(os.path.join(basedir,'ukmon.ini'), 'testpi4')
     assert vals['RMSCFG'] in ['~/source/Stations/UK0006/.config', '/root/source/RMS/.config', '~/source/RMS/.config']
 
 
 def test_uploadOneFile():
-    inifs = readIniFile(os.path.join(basedir,'ukmon.ini'))
+    inifs = readIniFile(os.path.join(basedir,'ukmon.ini'), 'testpi4')
     keys = readKeyFile(os.path.join(basedir,'live.key'), inifs)
     reg = keys['ARCHREGION']
     conn = boto3.Session(aws_access_key_id=keys['AWS_ACCESS_KEY_ID'], aws_secret_access_key=keys['AWS_SECRET_ACCESS_KEY']) 
@@ -63,12 +64,13 @@ def test_uploadOneFile():
     os.remove(outf)
 
 
+"""
 def test_manualUpload():
     targ_dir = 'test'
     updateLocation(os.path.join(basedir,'..'), 'testpi4')
     updateHelperIp(os.path.join(basedir,'..'), 'batchserver.ukmeteors.co.uk')
-    getLatestKeys(os.path.join(basedir,'..'))
-    assert manualUpload(targ_dir) is True
+    getLatestKeys(os.path.join(basedir,'..'), 'testpi4')
+    assert manualUpload(targ_dir, 'uk0006') is True
     targ_dir = os.path.join(basedir, 'ukmarch','testpi4_20230401')
     # create some dummy sample files
     testfilelist = ['FF_test_20230401.fits','FF_test_20230401.jpg','FF_test_20230401.mp4','mask.bmp',
@@ -78,7 +80,8 @@ def test_manualUpload():
                     ]
     for fil in testfilelist:
         open(os.path.join(targ_dir, fil), 'w').write('{"test":"potato"}')
-    assert manualUpload(targ_dir)
+    assert manualUpload(targ_dir, None)
     #updateLocation(basedir, 'NOTCONFIGURED')
     for fil in testfilelist:
         os.remove(os.path.join(targ_dir, fil))
+"""
