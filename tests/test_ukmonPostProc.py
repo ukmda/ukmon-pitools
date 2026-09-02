@@ -5,7 +5,7 @@
 import os
 import sys
 import pytest
-from ukmonPostProc import main
+#from ukmonPostProc import main
 
 
 myloc = os.path.split(os.path.abspath(__file__))[0]
