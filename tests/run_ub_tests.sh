@@ -8,7 +8,6 @@ if [ ! -f /keys/ukmon.ini ] ; then
     exit
 fi 
 cp /keys/ukmon.ini . 
-cp /keys/live.key .
 pushd /root/source/RMS 
 git stash && git pull && git stash apply 
 cp /keys/.config /root/source/RMS/
