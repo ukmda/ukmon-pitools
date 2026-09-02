@@ -41,7 +41,7 @@ def test_readKeyFile():
 
 def test_readKeyfileIni():
     vals = readIniFile(os.path.join(basedir,'ukmon.ini'))
-    assert vals['RMSCFG'] in ['~/source/Stations/UK0006/.config', '~/source/RMS/.config']
+    assert vals['RMSCFG'] == '~/source/Stations/UK0006/.config'
 
 
 def test_uploadOneFile():
