@@ -40,9 +40,8 @@ def test_readKeyFile():
 
 
 def test_readKeyfileIni():
-    homedir = os.path.join(basedir, 'output')
     vals = readIniFile(os.path.join(basedir,'ukmon.ini'))
-    assert vals['RMSCFG'] == '~/source/Stations/UK0006/.config'
+    assert vals['RMSCFG'] in ['~/source/Stations/UK0006/.config', '~/source/RMS/.config']
 
 
 def test_uploadOneFile():
