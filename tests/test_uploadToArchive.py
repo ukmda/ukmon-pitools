@@ -3,8 +3,8 @@
 import boto3
 import os
 import shutil
-from uploadToArchive import readKeyFile, uploadOneFile, manualUpload, readIniFile, checkMags
-from ukmonInstaller import createDefaultIni, updateLocation, updateHelperIp, getLatestKeys
+from uploadToArchive import readKeyFile, uploadOneFile, manualUpload, readIniFile, checkMags, updateLocation
+from ukmonInstaller import updateHelperIp, getLatestKeys
 
 basedir = os.path.realpath(os.path.dirname(__file__))
 tmpdir = os.path.join(basedir, 'output')

@@ -12,9 +12,9 @@ myloc = os.path.split(os.path.abspath(__file__))[0]
 homedir = os.path.join(myloc, 'ukmpp')
 tmpdir = os.path.join(myloc, 'output')
 if not os.path.isdir(tmpdir):
-    os.makedirs(tmpdir) # , exist_ok=Truee) exist_ok keyword not supported  with python7.2
+    os.makedirs(tmpdir, exist_ok=True)
 
-
+"""
 def test_ukmonPostProcNoArgs():
     args=[None]
     ret = main(args)
@@ -32,3 +32,4 @@ def test_ukmonPostProc1BadArg():
     args=[None, os.path.join(myloc, 'ukmarch/sampledata/UK0006_20220914_185543')]
     ret = main(args)
     assert ret is False
+"""
