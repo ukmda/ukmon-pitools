@@ -29,6 +29,11 @@ Rerun `setupUkmon.sh` for each camera you have on the Pi or Linux box. So if you
 
 * We will then add the keys to our server and send you ukmon IDs and instructions on how to finish the setup.
 
+### MIGRATION AN EXISTING INSTALLATION
+There's no need to make any changes as the toolset will work as before for both single and multi-cam setups. 
+
+However, if you have a multi-cam setup and want to consolidate onto a single instance of the toolset, you can do so. Just follow the above installation instructions to install and configure a new instance which supports all your cameras then edit the system crontab and remove any rows relating to the old versions of the toolset. Finally, you can delete the folders containing the old camera-specific toolsets. 
+
 ## Optional Settings
 
 The toolset has three optional capabilities that can be configured via `ukmon.ini`:
