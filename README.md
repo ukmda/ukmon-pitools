@@ -5,111 +5,91 @@ These tools manage uploads of RMS data to the UK Meteor Data Archive and to the 
 * The post-processing job that runs after RMS to send data to the archive.  
 * The realtime job that uploads detections to the livestream..  
 
-There is more information about RMS and the toolset in the wiki [here](https://github.com/ukmda/ukmon-pitools/wiki "UKMON Wiki")
+There is more information about RMS and the toolset in our wiki [here](https://github.com/ukmda/ukmon-pitools/wiki "UKMON Wiki")
 
 ## INSTALLATION
+*NB: first make sure all your RMS stations are set up and working correctly.*
 
-###  installation
-The first steps are for single-station *or* multistatoin setups.
-
-* Login to your pi using VNC or AnyDesk or TeamViewer, open a Terminal window from the Accessories menu, then type the following
+Login to your pi or Linux box, open a Terminal window from the Accessories menu, then type the following
 ``` bash
 cd $HOME/source  
 git clone https://github.com/ukmda/ukmon-pitools.git  
 ```
 
-#### Single-station Configuration 
-Open a terminal window and type the following, replacing UKxxxxx with your RMS camera ID eg UK12345
+Now configure the first station by typing the following, replacing UKxxxxx with your RMS camera ID eg UK12345
 ``` bash
 cd $HOME/source/ukmon-pitools  
 ./setupUkmon.sh  UKxxxxx
 ```
-* When prompted, copy the SSH public key. 
-* Email the key to newcamera@ukmeteornetwork.org along with your location (eg the name of your town or village), your GMN camera ID eg UK12345 and the rough direction your camera points in eg SW, S, NE. 
+When prompted, copy the SSH public key and paste it into a text document for safe-keeping. 
 
-* We will add your key to our server and send you instructions on how to complete the setup. 
+Rerun `setupUkmon.sh` for each camera you have on the Pi or Linux box. So if you had three cameras, you'd run `setupUkmon.sh` three times and end up with three different SSH keys. 
 
-### Multistation Configuratoin
-First make sure all your cameras are working correctly with RMS. You should have a folder for each camera in ~/source/Stations, and a data
-folder for each camera in ~/RMS_data.
-Now open a terminal window and type the following, replacing UKxxxxx with your RMS camera ID eg UK12345
-``` bash
-cd ukmon-pitools  
-./setupUkmon.sh  UKxxxxx
-```
-* When prompted, copy the SSH public key.
-* Repeat this for each camera you have on this machine. So if you had three cameras, you'd run `setupUkmon.sh` three times and end up with three different SSH keys. 
-* Email the keys to newcamera@ukmeteornetwork.org, indicating which RMS ID each key is for, plus your location (name of your town or village), and the rough direction each camera points in eg SW, S, ENE.
+* Email the keys to `newcamera@ukmeteornetwork.org`, indicating which RMS ID each key is for, plus your location (name of your town or village), and the rough direction each camera points in eg SW if the camera points approximately south-west.
 
 * We will then add the keys to our server and send you ukmon IDs and instructions on how to finish the setup.
 
-HOW THE TOOLS WORK
-==================
+## Optional Settings
 
-ukmonPostProc.py
-================
-This uses the RMS post-processing hook to creates JPGs and other data, then upload to the UK Meteor Network archive. The script has three optional capabilities: 
+The toolset has three optional capabilities that can be configured via `ukmon.ini`:
 
-MP4s
-------------------
-The script can create MP4s of each detection.
-To enable these, edit ukmon.ini and set DOMP4S to 1. 
+* DOMP4S: create short videos of each detection. Default is enabled, set to zero to disable. 
+* MAGLIM: magnitude limit below which images won't be uploaded to the server. This is to save space. It does *not* prevent the science data being uploaded, only the images. Default is 1
+* EXTRASCRIPT: the full path to a python script that will run after the ukmon tools. See below for more info.
 
-Running an Additional Script of your own
-----------------------------------------
-If you want to run an additional Python script after this one finishes, update the config file's EXTRASCRIPT with the full path and name of the python script.
 
-The script must contain a function rmsExternal with the following definition
+### Running an Additional Script of your own
+If you want to run an additional Python script after the ukmon toolset finishes, update EXTRASCRIPT with the full path and name of the python script. For example:
+``` bash
+export EXTRASCRIPT=/home/rms/source/mystuff/myscript.py
+```
+
+The script must contain a function with the following definition
 ``` python
 def rmsExternal(cap_dir, arch_dir, config):
     # do stuff here
 ```
-This will be passed the capture_dir, archive_dir and RMS config object in the same way as RMS passes these to any external script. 
+This function will be passed the capture_dir, archive_dir and RMS config object in the same way as RMS passes these to any external script. So, if you want to do something camera-specific, you can check the config.StationID field. 
 
-uploadToArchive.py
-==================
-This does the actual uploading to the UK meteor network archive. Can be called standalone if you want to reupload data:
-eg  
+### Manually Uploading to UKMON
+If you'd like to rerun the daily upload for a given day you can do so in a Terminal window as follows:
+
 ``` bash
-python uploadToArchive.py UK0006_20210312_183741_206154  
+cd $HOME/source/ukmon-pitools  
+python ukmonPostProc.py -d /full/path/to/CapturedFiles/ -c /full/path/to/config-file
+
 ```
-this will upload from $HOME/RMS_data/ArchivedFiles/UK0006_20210312_183741_206154
+where `/full/path/to/CapturedFiles/` is the full path to the folder that you want to reprocess eg `~/RMS_data/UK0006/CapturedFiles/UK0006_20210312_183741_206154`  
+and `/full/path/to/config-file` is the full path to the RMS config file for the camera eg `~/source/Stations/UK0006/.config`
 
-liveMonitor.sh
-==============
-This script monitors in realtime for detections, then uploads them to the livestream. The script calls a 
-python script liveMonitor.py.  
-
-There are two configuration parameters that you can set in ukmon.ini to control how this works: 
-* UKMFBINTERVAL: how frequently the process checks whether there's a request for fireball data. Default 1800 seconds. Set to zero to disable the fireball upload feature completely.  
-* UKMMAXAGE: How far back to look for events to upload. Default 1800 seconds. Each time the software is restarted, it will look for events in the log. This parameter avoids too much reuploading of old events.  
-
-You shouldn't really need to set these but if you do, then for example edit ukmon.ini and add  
-``` bash
-export UMFBINTERVAL=900
-``` 
-to set the check interval to 900 seconds. Note there must be no spaces around the equals sign, and that
-export must be in lowercase.  
-
-sendToLive.py
--------------
-Part of liveMonitor, this python script does the actual uploading. You can use it manually as follows:  
-``` bash
-python sendToLive.py capture-dir ff-file-name 
+Rerunning Uploads to the Livestream
+-----------------------------------
+You can force-restart the uploader by typing
+```bash 
+cd $HOME/source/ukmon-pitools  
+./restartLiveMon.sh force
 ```
-refreshTools.sh
-===============
-Updates the UKMON RMS Toolset to the latest version. After first run, this will run automatically
-every time your Pi reboots. You can also run it manually. 
+By default, the script will scan the last 30 minutes of the log and upload any events it finds. If you need to scan a longer window, you can do so by setting an environment variable first. For example to scan the last hour do this:
 
-refreshTools reads from a configuration file that is specific to your camera. We will send
-you this file when you onboard to the network. The file contains your location ID and the
-details of our sftp server used to distribute security keys. 
+```bash 
+export UKMMAXAGE=3600
+cd $HOME/source/ukmon-pitools  
+./restartLiveMon.sh force
+```
+## Updating the Toolset
+The toolset adds an entry to the system scheduled jobs (crontab) which executes `refreshTools.sh` at boot time. So, on most Raspberry Pi stations the toolset will be updated daily.
+
+If you're running on a Linux box or Pi that is not rebooting each night, I recommend you add a cron entry to force an update at around noon each Sunday, similar to the below. 
+``` bash
+1 12 * * SUN /home/rms/source/ukmon-pitools/refreshTools.sh > /home/rms/RMS_Data/logs/refreshTools.log 2>&1
+```
+
+You can also run the script at any time to force an update immediately.  
 
 Questions
 =========
 Any questions, concerns or suggestions:
-* Check the wiki here https://github.com/markmac99/ukmon-pitools/wiki
+* Check the wiki here https://github.com/ukmda/ukmon-pitools/wiki
 * Join our group on Groups.io https://groups.io/g/ukmeteornetwork/topics
 * As a last resort, email us via newcamera@ukmeteornetwork.org
 
