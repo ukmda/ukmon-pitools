@@ -3,11 +3,6 @@
 # and upload data to the uk meteor data archive
 # Copyright (C) 2018-2023 Mark McIntyre
 #
-# Notes: 
-# - to enable MP4 creation of each detection, create a file 'domp4s' in the same folder as this script
-# - to enable creation of an all-night timelapse, create a file 'dotimelapse'
-# - to trigger another python script after this one, create a file 'extrascript' containing the full path 
-#   to the extra script. The script will be passed the same arguments as this one (cap_dir, arc_dir, config)
 
 import os
 import sys
@@ -19,22 +14,22 @@ import Utils.GenerateMP4s as gmp4
 import RMS.ConfigReader as cr
 from importlib import import_module as impmod
 import logging
-import logging.handlers
 import datetime
+import argparse
 
 from uploadToArchive import uploadToArchive, readIniFile
 
-log = logging.getLogger("ukmonlogger")
-log.setLevel(logging.INFO)
+
+ukmlog = logging.getLogger("ukmonlogger")
+ukmlog.setLevel(logging.INFO)
+
+versionid = '2026.01.04'
 
 
 def setupLogging(logpath, prefix):
     print('about to initialise logger')
     logdir = os.path.expanduser(logpath)
     os.makedirs(logdir, exist_ok=True)
-    log.info('removing any existing log handlers')
-    for handler in log.handlers[:]:
-        log.removeHandler(handler)
 
     logfilename = os.path.join(logdir, prefix + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d_%H%M%S.%f') + '.log')
     handler = logging.handlers.TimedRotatingFileHandler(logfilename, when='D', interval=1) 
@@ -42,20 +37,20 @@ def setupLogging(logpath, prefix):
     formatter = logging.Formatter(fmt='%(asctime)s-%(levelname)s-%(module)s-line:%(lineno)d - %(message)s', 
         datefmt='%Y/%m/%d %H:%M:%S')
     handler.setFormatter(formatter)
-    log.addHandler(handler)
+    ukmlog.addHandler(handler)
 
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.WARNING)
     formatter = logging.Formatter(fmt='%(asctime)s-%(levelname)s-%(module)s-line:%(lineno)d - %(message)s', 
         datefmt='%Y/%m/%d %H:%M:%S')
     ch.setFormatter(formatter)
-    log.addHandler(ch)
+    ukmlog.addHandler(ch)
 
-    log.setLevel(logging.INFO)
+    ukmlog.setLevel(logging.INFO)
 
     purgeOldLogs(logdir, prefix)
 
-    log.info('logging initialised')
+    ukmlog.info('logging initialised')
     return 
 
 
@@ -63,7 +58,7 @@ def purgeOldLogs(logdir, logpref, days=30):
     reftime = time.time() - 86400*days
     for logf in glob.glob(os.path.join(logdir, logpref + '*.log*')):
         if os.path.getmtime(logf) < reftime:
-            log.debug('removing old log', logf)
+            ukmlog.debug('removing old log', logf)
             os.remove(logf)
     return 
 
@@ -81,32 +76,30 @@ def rmsExternal(cap_dir, arch_dir, config):
 
     """
     setupLogging(os.path.join(config.data_dir, config.log_dir), f'ukmon_log_{config.stationID}_')
-    log.info('ukmon external script started')
+    print('ukmon external script started, version ' + versionid)
+    ukmlog.info(f'ukmon external script started, version {versionid}')
     
     rebootlockfile = os.path.join(config.data_dir, config.reboot_lock_file)
     with open(rebootlockfile, 'w') as f:
         f.write('1')
 
-    log.info('uploading key science files to archive')
-    keys = uploadToArchive(arch_dir, sciencefiles=True)
+    ukmlog.info('uploading key science files to archive')
+    keys = uploadToArchive(arch_dir, config.stationID, sciencefiles=True)
     # create jpgs from the potential detections
-    log.info('creating JPGs')
+    ukmlog.info('creating JPGs')
     try:
         bff2i.batchFFtoImage(arch_dir, 'jpg', True)
     except Exception:
         bff2i.batchFFtoImage(arch_dir, 'jpg')
 
     myloc = os.path.split(os.path.abspath(__file__))[0]
-    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'))
-    log.info('app home is {}'.format(myloc))
-    domp4s = 0
-    if 'DOMP4S' in inifvals:
-        domp4s = int(inifvals['DOMP4S'])
-    elif os.path.isfile(os.path.join(myloc, 'domp4s')):
-        domp4s = 1
-    if domp4s == 1: 
+    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), config.stationID)
+    if not inifvals or inifvals['LOCATION']=='NOTCONFIGURED':
+        return False
+    ukmlog.info('app home is {}'.format(myloc))
+    if 'DOMP4S' in inifvals and int(inifvals['DOMP4S']) == 1: 
         # generate MP4s of detections
-        log.info('generating MP4s')
+        ukmlog.info('generating MP4s')
         ftpdate=''
         if os.path.split(arch_dir)[1] == '':
             ftpdate=os.path.split(os.path.split(arch_dir)[0])[1]
@@ -121,87 +114,90 @@ def rmsExternal(cap_dir, arch_dir, config):
         except Exception:
             gmp4.generateMP4s(arch_dir, ftpfile_name)
     else:
-        log.info('mp4 creation not enabled')
+        ukmlog.info('mp4 creation not enabled')
     
-    log.info('uploading remaining files to archive')
-    uploadToArchive(arch_dir, keys=keys)
+    ukmlog.info('uploading remaining files to archive')
+    uploadToArchive(arch_dir, config.stationID, keys=keys)
 
-    # do not remove reboot lock file if running another script
-    # os.remove(rebootlockfile)
-    
-    extrascrfn = os.path.join(myloc, 'extrascript')
-    if os.path.isfile(extrascrfn):
-        extrascript = open(extrascrfn,'r').readline().strip()
-        log.info('running additional script {:s}'.format(extrascript))
-        while len(log.handlers) > 0:
-            log.removeHandler(log.handlers[0])  
-        sloc, sname = os.path.split(extrascript)
-        sys.path.append(sloc)
-        scrname, _ = os.path.splitext(sname)
-        nextscr=impmod(scrname)
-        nextscr.rmsExternal(cap_dir, arch_dir, config)
-    else:
-        log.info('additional script not called')
+    if inifvals['EXTRASCRIPT']:
         try:
-            os.remove(rebootlockfile)
-        except Exception:
-            log.info('unable to remove reboot lock file, pi will not reboot')
-            pass
+            ukmlog.info('running additional script {:s}'.format(inifvals['EXTRASCRIPT']))
+            sloc, sname = os.path.split(inifvals['EXTRASCRIPT'])
+            sys.path.append(sloc)
+            scrname, _ = os.path.splitext(sname)
+            print('about to import extl module')
+            ukmlog.info('about to import extl module')
+            nextscr=impmod(scrname)
+            ukmlog.info('launching {} from {}'.format(scrname, sloc))
+            nextscr.rmsExternal(cap_dir, arch_dir, config)
+        except Exception as e:
+            ukmlog.warning('problem calling external script')
+            ukmlog.warning(e)
+    else:
+        ukmlog.info('additional script not called')
 
-    log.info('done')
+    if os.path.isfile(rebootlockfile):
+        os.remove(rebootlockfile)
+    ukmlog.info('ukmon done')
+    print('ukmon done')
     # clear log handlers again
-    while len(log.handlers) > 0:
-        log.removeHandler(log.handlers[0])  
+    #for handler in ukmlog.handlers[:]:
+    #    ukmlog.removeHandler(handler)
+    #    handler.close()
     return True
 
 
-def manualRerun(dated_dir, rmscfg = '~/source/RMS/.config'):
-    """This function is used to manually rerun the Ukmon post processing script.  
-    To invoke this function, open a Terminal window and run the following:  
-
-    *python ../ukmon-pitools/ukmonPostProc.py dated_dir*  
-
-    Args:
-        dated_dir (str): The name of the folder to upload eg UK000F_20210512_202826_913898  
-
-    """
-    config = cr.parse(os.path.expanduser(rmscfg))
-    cap_dir = os.path.join(config.data_dir, 'CapturedFiles', dated_dir)
-    if not os.path.isdir(cap_dir):
-        return False
-    arch_dir = os.path.join(config.data_dir, 'ArchivedFiles', dated_dir)
-    if not os.path.isdir(arch_dir):
-        return False
-    return rmsExternal(cap_dir, arch_dir, config)
-
-
-def main(args):
-    if len(args) < 2:
-        print('usage: python ukmonPostProc.py arc_dir_name')
-        print('eg python ukmonPostProc.py UK0006_20210312_183741_206154')
-        print('\n nb: script must be run from RMS source folder')
-        return False
-    
-    arch_dir = args[1]
-    myloc = os.path.split(os.path.abspath(__file__))[0]
-    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'))
-    if inifvals is None:
-        print('unable to open ukmon ini file')
-        return 'unable to open ukmon ini file'
-    try:
-        rmscfg = inifvals['RMSCFG']
-    except Exception:
-        rmscfg='~/source/RMS/.config'
-    try:
-        if 'ConfirmedFiles' in arch_dir or 'ArchivedFiles' in arch_dir or 'CapturedFiles' in arch_dir:
-            _, arch_dir = os.path.split(arch_dir)
-        print('RMS config read from {}'.format(rmscfg))
-        ret = manualRerun(arch_dir, rmscfg)
-        return ret
-    except Exception:
-        print('unable to call manualRerun')
-        return False
-
-
 if __name__ == '__main__':
-    main(sys.argv)
+    arg_parser = argparse.ArgumentParser(description="Run ukmon postprocessing script.")
+    arg_parser.add_argument('-d', '--dir_path', nargs=1, metavar='DIR_PATH', type=str,
+        help='Path to CapturedFiles folder to process. Defaults to latest.')
+
+    arg_parser.add_argument( '-c', '--config', nargs=1, metavar='CONFIG_PATH', type=str,
+        help="Path to the RMS config file. Defaults to working it out from dir_path")
+    
+    arg_parser.add_argument( '-t', '--toolcfg', nargs=1, metavar='TOOL_CFG_PATH', type=str,
+        help="Path to the ukmon config file. Defaults to loading ukmon.ini from current directory.")
+    
+    cml_args = arg_parser.parse_args()
+
+    if not cml_args.config and not cml_args.dir_path:
+        print('Must supply either --dir_path or --config parameters or both')
+        exit(1)
+
+    if cml_args.config:
+        rms_cfg_file = cml_args.config
+    else:
+        rms_cfg_file = [os.path.expanduser('~/source/RMS/.config')]
+    rmscfg = cr.loadConfigFromDirectory(rms_cfg_file, 'notused')
+    stationId = rmscfg.stationID
+    if stationId == 'XX0001':
+        print(f'Station not configured in {rms_cfg_file}')
+
+    datadir = rmscfg.data_dir
+    if cml_args.dir_path:
+        targdir = cml_args.dir_path[0]
+        lastcap = os.path.normpath(os.path.expanduser(targdir))
+        if not os.path.isdir(lastcap):
+            testpth = os.path.expanduser(os.path.join(datadir, 'CapturedFiles', f'*{targdir}*'))
+            capdirs = glob.glob(testpth)
+            if len(capdirs) == 0:
+                print(f'Capture folder {cml_args.dir_path[0]} not found')
+                exit(1)
+            else:
+                capdirs.sort()
+                lastcap = capdirs[-1]
+    else:
+        capdir = os.path.expanduser(os.path.join(datadir, 'CapturedFiles'))
+        recentcaps = os.listdir(capdir)
+        recentcaps.sort()
+        if len(recentcaps) >0:
+            lastcap = recentcaps[-1]
+        else:
+            print(f'no captured data in {capdir}')
+            exit(0)
+    lastcap = os.path.split(lastcap)[1]
+
+    cap_dir = os.path.join(datadir, 'CapturedFiles', lastcap)
+    arch_dir = os.path.join(datadir, 'ArchivedFiles', lastcap)
+    print(f'processing {lastcap}')
+    rmsExternal(cap_dir, arch_dir, rmscfg)
