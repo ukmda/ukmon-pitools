@@ -3,8 +3,8 @@
 import os
 import shutil
 
-from ukmonInstaller import createDefaultIni, updateHelperIp, updateLocation, \
-    checkPostProcSettings, validateIni, getLatestKeys # noqa: E402
+from ukmonInstaller import createDefaultIni, updateHelperIp, checkPostProcSettings, validateIni
+from uploadToArchive import updateLocation, getLatestKeys 
 
 myloc = os.path.split(os.path.abspath(__file__))[0]
 homedir = os.path.join(myloc, 'ukminst')
@@ -90,7 +90,7 @@ def test_getLatestKeys_normal():
     shutil.copyfile(os.path.join(myloc, '../ukmon.ini'),os.path.join(homedir,'ukmon.ini'))
     updateHelperIp(homedir, helperip='batchserver.ukmeteors.co.uk')
     updateLocation(homedir, 'testpi4')
-    res = getLatestKeys(homedir)
+    res = getLatestKeys(homedir, 'testpi4')
     assert res is True
     os.remove(os.path.join(homedir, 'ukmon.ini'))
     return 
@@ -101,7 +101,7 @@ def test_getLatestKeys_newname():
     updateHelperIp(homedir, helperip='batchserver.ukmeteors.co.uk')
     updateLocation(homedir, 'testpi4')
     remoteinifname = 'ukmon.ini.newname'
-    res = getLatestKeys(homedir, remoteinifname=remoteinifname)
+    res = getLatestKeys(homedir, 'testpi4', remoteinifname=remoteinifname)
     assert res is True
     lis = open(os.path.join(homedir, 'ukmon.ini'), 'r').readlines()
     for li in lis:
@@ -117,7 +117,7 @@ def test_getLatestKeys_newip():
     updateHelperIp(homedir, helperip='batchserver.ukmeteors.co.uk')
     updateLocation(homedir, 'testpi4')
     remoteinifname = 'ukmon.ini.newip'
-    res = getLatestKeys(homedir, remoteinifname=remoteinifname)
+    res = getLatestKeys(homedir, 'testpi4', remoteinifname=remoteinifname)
     assert res is True
     lis = open(os.path.join(homedir, 'ukmon.ini'), 'r').readlines()
     for li in lis:

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Copyright (c) Mark McIntyre
 
-# tests designed to run on ubuntu
+# tests designed to run in the Ubuntu container
 here="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 if [ ! -f /keys/ukmon.ini ] ; then
     echo no test config, aborting
