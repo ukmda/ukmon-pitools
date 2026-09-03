@@ -8,7 +8,7 @@ import datetime
 import logging
 import RMS.ConfigReader as cr
 from stat import ST_INO
-from uploadToArchive import readKeyFile, readIniFile, getLatestKeys
+from uploadToArchive import readKeyFile, readIniFile, getLatestKeys, keyfilename
 from ukmonPostProc import setupLogging, versionid
 
 
@@ -78,11 +78,11 @@ def monitorLogFile(camloc, stationid=None):
     log.info('RMS config file is {}'.format(rmscfg))
 
     # get credentials
-    if not os.path.isfile(os.path.join(myloc, 'live.key')):
+    if not os.path.isfile(os.path.join(myloc, keyfilename)):
         if not getLatestKeys(myloc, cfg.stationID):
-            print('unable to get key for', inifvals['LOCATION'])
+            print('unable to get AWS configuration for', inifvals['LOCATION'])
             exit(1)
-    keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
+    keys = readKeyFile(os.path.join(myloc, keyfilename), inifvals)
     if not keys:
         log.error('unable to read AWS configuration, aborting')
         exit(1)

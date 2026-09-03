@@ -27,6 +27,7 @@ import configparser
 
 from RMS.Formats.FTPdetectinfo import readFTPdetectinfo
 
+keyfilename = '.settings'
 
 log = logging.getLogger("ukmonlogger")
 logging.getLogger("paramiko").setLevel(logging.WARNING)
@@ -54,8 +55,8 @@ def getLatestKeys(homedir, stationid, remoteinifname='ukmon.ini'):
         return False
 
     # get the aws key file
-    ftp_client.get('live.key', os.path.join(homedir, 'live.key'))
-    os.chmod(os.path.join(homedir, 'live.key'), 0o600)
+    ftp_client.get('live.key', os.path.join(homedir, keyfilename))
+    os.chmod(os.path.join(homedir, keyfilename), 0o600)
 
     # get the new ini and check for changes
     currinif = os.path.join(homedir, 'ukmon.ini')
@@ -83,7 +84,7 @@ def getLatestKeys(homedir, stationid, remoteinifname='ukmon.ini'):
 
 def readKeyFile(filename, inifvals):
     if not os.path.isfile(filename):
-        log.error('Keyfile {} not downloaded. Check ssh key and station location with ukmon team.'.format(filename))
+        log.error('AWS configuration not downloaded. Check ssh key and station location with ukmon team.')
         return False
     with open(filename, 'r') as fin:
         lis = fin.readlines()
@@ -425,7 +426,7 @@ def uploadToArchive(arch_dir, stationid, sciencefiles=False, keys=False):
     if inifvals['LOCATION']=='NOTCONFIGURED':
         return False
     if not keys:
-        keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
+        keys = readKeyFile(os.path.join(myloc, keyfilename), inifvals)
         if not keys:
             return False
     reg = keys['ARCHREGION']
@@ -537,11 +538,11 @@ def manualUpload(targ_dir, stationid, sciencefiles=False):
                 continue
             if stationid is not None:
                 stationid = stationid.upper()
-            if not os.path.isfile(os.path.join(myloc, 'live.key')):
+            if not os.path.isfile(os.path.join(myloc, keyfilename)):
                 if not getLatestKeys(myloc, stationid):
-                    print('unable to get key for', inifvals['LOCATION'])
+                    print('unable to get AWS configuration for', inifvals['LOCATION'])
                     continue
-            keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
+            keys = readKeyFile(os.path.join(myloc, keyfilename), inifvals)
             if not keys:
                 continue
             testfile = os.path.join(os.getenv('TMP', default='/tmp'),'test.txt')
