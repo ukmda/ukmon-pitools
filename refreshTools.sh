@@ -19,7 +19,7 @@ pip list | grep paramiko || pip install paramiko
 # validate the ini file 
 echo "checking ini file is valid"
 python -c "import ukmonInstaller as pp ; pp.validateIni('${here}', '3.11.55.160');"
-python -c "import ukmonInstaller as pp ; pp.updateExtrascript('${here}/ukmon.ini', '${here}');"
+python -c "import uploadToArchive as ua ; ua.updateExtrascript('${here}/ukmon.ini', '${here}');"
 source $here/ukmon.ini
 
 echo "refreshing toolset"

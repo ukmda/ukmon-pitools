@@ -161,6 +161,25 @@ def updateLocation(homedir, newloc):
     return 
 
 
+def updateExtrascript(inif, homedir):
+    """
+    Move the extra script into the ini file 
+    """
+    extrascript = ''
+    if os.path.isfile(os.path.join(homedir, 'extrascript')):
+        log.info('moving extrascript into ini file')
+        extrascript = open(os.path.join(homedir, 'extrascript'),'r').readline().strip()
+        lis = open(inif,'r').readlines()
+        isxs = [x for x in lis if 'EXTRASCRIPT' in x]
+        if len(isxs) == 0:
+            lis.append('export EXTRASCRIPT={}\n'.format(extrascript))
+        else:
+            lis[lis.index(isxs[0])] = 'export EXTRASCRIPT={}\n'.format(extrascript)
+        open(inif,'w').writelines(lis)
+        os.remove(os.path.join(homedir, 'extrascript'))   
+    return
+
+
 def getAWSKey(inifvals):
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())

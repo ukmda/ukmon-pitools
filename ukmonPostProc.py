@@ -17,7 +17,7 @@ import logging
 import datetime
 import argparse
 
-from uploadToArchive import uploadToArchive, readIniFile
+from uploadToArchive import uploadToArchive, readIniFile, updateExtrascript
 
 
 ukmlog = logging.getLogger("ukmonlogger")
@@ -93,6 +93,7 @@ def rmsExternal(cap_dir, arch_dir, config):
         bff2i.batchFFtoImage(arch_dir, 'jpg')
 
     myloc = os.path.split(os.path.abspath(__file__))[0]
+    updateExtrascript(os.path.join(myloc, 'ukmon.ini'), myloc)
     inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), config.stationID)
     if not inifvals or inifvals['LOCATION']=='NOTCONFIGURED':
         return False
