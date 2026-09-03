@@ -34,4 +34,4 @@ git fetch
 echo "testing connections"
 python $here/sendToLive.py test test
 python $here/uploadToArchive.py test
-echo "if you did not see success messages for each camera contact us for advice" 
+echo "if you did not see success messages for each camera plus one extra, contact us for advice" 
