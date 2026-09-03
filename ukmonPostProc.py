@@ -23,7 +23,7 @@ from uploadToArchive import uploadToArchive, readIniFile, updateExtrascript
 ukmlog = logging.getLogger("ukmonlogger")
 ukmlog.setLevel(logging.INFO)
 
-versionid = "2026.9.0"
+versionid = "2026.9.1"
 
 
 def setupLogging(logpath, prefix):
