@@ -57,6 +57,8 @@ def getLatestKeys(homedir, stationid, remoteinifname='ukmon.ini'):
     # get the aws key file
     ftp_client.get('live.key', os.path.join(homedir, keyfilename))
     os.chmod(os.path.join(homedir, keyfilename), 0o600)
+    if os.path.isfile(os.path.join(homedir, 'live.key')):
+        os.remove(os.path.join(homedir, 'live.key'))
 
     # get the new ini and check for changes
     currinif = os.path.join(homedir, 'ukmon.ini')
