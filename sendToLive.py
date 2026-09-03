@@ -170,6 +170,9 @@ def singleUpload(cap_dir, dir_file, stationid=None):
         log.error('RMS config file not found at {}, aborting'.format(rmscfg))
         return 'RMS config file not found at', rmscfg, ', aborting'
 
+    # Load the RMS config file
+    cfg = cr.parse(os.path.expanduser(rmscfg))
+
     # get credentials
     if not os.path.isfile(os.path.join(myloc, keyfilename)):
         if not getLatestKeys(myloc, cfg.stationID):
@@ -179,9 +182,6 @@ def singleUpload(cap_dir, dir_file, stationid=None):
     if not keys:
         log.error('unable to open AWS configuration')
         return 'unable to open AWS configuration'
-
-    # Load the RMS config file
-    cfg = cr.parse(os.path.expanduser(rmscfg))
 
     if cap_dir == 'test' and dir_file == 'test':
         retmsg = testFeed(keys, cfg)
