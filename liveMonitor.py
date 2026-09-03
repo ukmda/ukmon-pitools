@@ -60,8 +60,8 @@ def monitorLogFile(camloc, stationid=None):
         log.error('ukmon.ini not present, aborting')
         exit(1)
     rmscfg = inifvals['RMSCFG']
-    if not os.path.isfile(rmscfg):
-        log.error('rms config file', rmscfg,'not present, aborting')
+    if not os.path.isfile(os.path.expanduser(rmscfg)):
+        log.error('rms config file' + rmscfg +'not present, aborting')
         exit(1)
     cfg = cr.parse(os.path.expanduser(rmscfg))
 
