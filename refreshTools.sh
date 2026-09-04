@@ -30,6 +30,7 @@ git stash apply
 
 python -c "from ukmonInstaller import relocateGitRepo;relocateGitRepo()"
 git fetch
+python -c "from ukmonInstaller import addWikiLink;addWikiLink()"
 
 echo "testing connections"
 python $here/sendToLive.py test test
