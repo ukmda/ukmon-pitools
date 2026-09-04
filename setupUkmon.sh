@@ -94,7 +94,6 @@ if [[ "$LOCATION" != "NOTCONFIGURED"  && "$LOCATION" != "" ]] ; then
 else
     echo $CAMID
     echo "Location missing. Please obtain a location code from the UKMON team"
-    fi 
     sleep 5
     if [ "$DOCKER_RUNNING" != "true" ] ; then read -p "Press any key to end" ; fi
     exit 1

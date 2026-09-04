@@ -166,7 +166,7 @@ def installUkmonFeed(statid):
 
     checkPostProcSettings(myloc, cfgname)
     checkCrontab(myloc, datadir)
-    addDesktopIcons(myloc, statid)
+    addDesktopIcons(myloc)
     checkPlatepar(myloc, statid, os.path.dirname(cfgname))
     return 
 
