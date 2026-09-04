@@ -535,12 +535,12 @@ def manualUpload(targ_dir, stationid, sciencefiles=False):
         stations = getListOfStations(myloc)
         for cam in stations:
             stationid = cam[0]
-            print('testing', stationid)
             inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
             if inifvals['LOCATION']=='NOTCONFIGURED':
                 continue
             if stationid is not None:
                 stationid = stationid.upper()
+            print('testing', stationid, inifvals['UKMONKEY'])
             if not os.path.isfile(os.path.join(myloc, keyfilename)):
                 if not getLatestKeys(myloc, stationid):
                     print('unable to get AWS configuration for', inifvals['LOCATION'])
