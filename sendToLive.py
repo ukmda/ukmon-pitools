@@ -11,7 +11,7 @@ import Utils.BatchFFtoImage as bff
 import shutil
 import tempfile
 import boto3
-from uploadToArchive import readKeyFile, readIniFile, getListOfStations
+from uploadToArchive import readKeyFile, readIniFile, getListOfStations, getLatestKeys, keyfilename
 import logging
 import RMS.ConfigReader as cr
 import numpy as np
@@ -170,14 +170,18 @@ def singleUpload(cap_dir, dir_file, stationid=None):
         log.error('RMS config file not found at {}, aborting'.format(rmscfg))
         return 'RMS config file not found at', rmscfg, ', aborting'
 
-    # get credentials
-    keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
-    if not keys:
-        log.error('unable to open keyfile')
-        return 'unable to open keyfile'
-
     # Load the RMS config file
     cfg = cr.parse(os.path.expanduser(rmscfg))
+
+    # get credentials
+    if not os.path.isfile(os.path.join(myloc, keyfilename)):
+        if not getLatestKeys(myloc, cfg.stationID):
+            print('unable to get AWS configuration for', inifvals['LOCATION'])
+            return 'unable to get AWS configuration'
+    keys = readKeyFile(os.path.join(myloc, keyfilename), inifvals)
+    if not keys:
+        log.error('unable to open AWS configuration')
+        return 'unable to open AWS configuration'
 
     if cap_dir == 'test' and dir_file == 'test':
         retmsg = testFeed(keys, cfg)

@@ -47,6 +47,6 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:$(pwd):~/source/RMS
           cd ../ukmon-pitools/
           cp ~/source/ukmon-pitools/ukmon.ini .
-          cp ~/source/ukmon-pitools/live.key .
+          cp ~/source/ukmon-pitools/.settings .
           source ukmon.ini
           pytest -v . --cov=. --cov-report=term-missing --cov-config=.coveragerc_lnx

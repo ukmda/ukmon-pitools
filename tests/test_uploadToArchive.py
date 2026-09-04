@@ -4,7 +4,7 @@ import boto3
 import os
 import shutil
 from uploadToArchive import readKeyFile, uploadOneFile, manualUpload, \
-    readIniFile, checkMags, updateLocation, getLatestKeys
+    readIniFile, checkMags, updateLocation, getLatestKeys, keyfilename
 from ukmonInstaller import updateHelperIp
 
 basedir = os.path.realpath(os.path.dirname(__file__))
@@ -36,8 +36,8 @@ def test_readIniFile():
 
 def test_readKeyFile():
     inifs = readIniFile(os.path.join(basedir,'ukmon.ini'), 'testpi4')
-    vals = readKeyFile(os.path.join(basedir,'live.key'), inifs)
-    assert vals['S3FOLDER'] in  ['tmp/testpi4','archive/Tackley']
+    vals = readKeyFile(os.path.join(basedir,keyfilename), inifs)
+    assert vals['S3FOLDER'] in  ['test/uploads/main','archive/Tackley']
 
 
 def test_readKeyfileIni():
@@ -47,7 +47,7 @@ def test_readKeyfileIni():
 
 def test_uploadOneFile():
     inifs = readIniFile(os.path.join(basedir,'ukmon.ini'), 'testpi4')
-    keys = readKeyFile(os.path.join(basedir,'live.key'), inifs)
+    keys = readKeyFile(os.path.join(basedir,keyfilename), inifs)
     reg = keys['ARCHREGION']
     conn = boto3.Session(aws_access_key_id=keys['AWS_ACCESS_KEY_ID'], aws_secret_access_key=keys['AWS_SECRET_ACCESS_KEY']) 
     s3 = conn.resource('s3', region_name=reg)
