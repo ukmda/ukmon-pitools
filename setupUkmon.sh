@@ -49,11 +49,11 @@ UKMONKEY=~/.ssh/ukmon_$CAMID
 if [ ! -f  ${UKMONKEY} ] ; then 
     echo "creating ukmon ssh key"
     ssh-keygen -t rsa -f ${UKMONKEY} -q -N ''
-    echo "Now copy this public key and email it to newcamera@ukmeteornetwork.org, then "
-    echo "wait for confirmation and further instructions to complete the setup."
+    echo "Now copy this public key and paste it into a text document to keep it safe."
     echo ""
     cat ${UKMONKEY}.pub
     echo ""
+    echo "If you want to configure another camera, rerun this script"
     read -p "Press any key to continue"
     exit
 fi
