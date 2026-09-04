@@ -540,7 +540,6 @@ def manualUpload(targ_dir, stationid, sciencefiles=False):
                 continue
             if stationid is not None:
                 stationid = stationid.upper()
-            print('testing', stationid, inifvals['LOCATION'])
             if not os.path.isfile(os.path.join(myloc, keyfilename)):
                 if not getLatestKeys(myloc, stationid):
                     print('unable to get AWS configuration for', inifvals['LOCATION'])
