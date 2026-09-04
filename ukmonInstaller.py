@@ -144,24 +144,25 @@ def getLatestKeys(homedir, stationid, remoteinifname=None):
     return
 
 
-def installUkmonFeed(rmscfg='~/source/RMS/.config'):
+def installUkmonFeed(statid):
     """ 
     Installs the UKMon postprocessing script into the RMS config file.
-    It is called from the refreshTools script during initial installation and should never
-    be called outside of that unless you're *certain* you know what you're doing. The script 
-    alters the rms .config file. 
+    It is called from the during initial installation and should never
+    be called outside of that unless you're *certain* you know what you're doing as it 
+    alters the RMS .config file. 
 
     """
     myloc = os.path.split(os.path.abspath(__file__))[0]
+    rmscfg = os.path.expanduser(f'~/source/Stations/{statid}/.config')
+    if not os.path.isfile(rmscfg):
+        rmscfg = os.path.expanduser(f'~/source/RMS/.config')
+
     cfgname = os.path.expanduser(rmscfg)
     config = cr.parse(cfgname)
     datadir = os.path.expanduser(config.data_dir)
-    statid = config.stationID
-    while statid == 'XX0001':
-        print('RMS is refreshing, waiting 30s...')
-        time.sleep(30)
-        config = cr.parse(cfgname)
-        statid = config.stationID
+    if statid != config.stationID:
+        print(f'config file mismatch - setup for {statid} but found {config.stationID}')
+        return
 
     checkPostProcSettings(myloc, cfgname)
     checkCrontab(myloc, datadir)
@@ -283,7 +284,7 @@ def createUbuntuIcon(myloc):
     return 
 
 
-def addDesktopIcons(myloc, statid):
+def addDesktopIcons(myloc):
     """
     For Debian and Raspian, add the desktop icons which are links to the ini file and refresh scripts
     """
