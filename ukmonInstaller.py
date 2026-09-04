@@ -294,9 +294,6 @@ def addDesktopIcons(myloc, statid):
     cfglnk = os.path.expanduser('~/Desktop/UKMON_config.txt')
     if not os.path.islink(cfglnk):
         os.symlink(os.path.join(myloc, 'ukmon.ini'), cfglnk)
-    wikilnk = os.path.expanduser('~/Desktop/UKMON Wiki.html')
-    with open(wikilnk) as outf:
-        outf.write('<meta http-equiv="refresh" content="0; url=https://github.com/ukmda/ukmon-pitools/wiki" />')
     if os.path.isfile(os.path.join(myloc, 'cameras.ini')):
         camlnk = os.path.expanduser('~/Desktop/UKMON_cameras.txt')
         if not os.path.islink(camlnk):
@@ -307,7 +304,16 @@ def addDesktopIcons(myloc, statid):
             os.symlink(os.path.join(myloc, 'refreshTools.sh'), reflnk)
     else:
         createUbuntuIcon(myloc)
+    addWikiLink()
     return
+
+
+def addWikiLink():
+    # separate function to add wiki link for use from refreshtools    
+    wikilnk = os.path.expanduser('~/Desktop/UKMON Wiki.html')
+    with open(wikilnk) as outf:
+        outf.write('<meta http-equiv="refresh" content="0; url=https://github.com/ukmda/ukmon-pitools/wiki" />')
+    return 
 
 
 def checkPlatepar(homedir, statid, rmsloc):
