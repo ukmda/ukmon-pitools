@@ -311,7 +311,7 @@ def addDesktopIcons(myloc, statid):
 def addWikiLink():
     # separate function to add wiki link for use from refreshtools    
     wikilnk = os.path.expanduser('~/Desktop/UKMON Wiki.html')
-    with open(wikilnk) as outf:
+    with open(wikilnk, 'w') as outf:
         outf.write('<meta http-equiv="refresh" content="0; url=https://github.com/ukmda/ukmon-pitools/wiki" />')
     return 
 
