@@ -294,9 +294,13 @@ def addDesktopIcons(myloc, statid):
     cfglnk = os.path.expanduser('~/Desktop/UKMON_config.txt')
     if not os.path.islink(cfglnk):
         os.symlink(os.path.join(myloc, 'ukmon.ini'), cfglnk)
-    camlnk = os.path.expanduser('~/Desktop/UKMON_cameras.txt')
-    if not os.path.islink(camlnk):
-        os.symlink(os.path.join(myloc, 'cameras.ini'), camlnk)
+    wikilnk = os.path.expanduser('~/Desktop/UKMON Wiki.html')
+    with open(wikilnk) as outf:
+        outf.write('<meta http-equiv="refresh" content="0; url=https://github.com/ukmda/ukmon-pitools/wiki" />')
+    if os.path.isfile(os.path.join(myloc, 'cameras.ini')):
+        camlnk = os.path.expanduser('~/Desktop/UKMON_cameras.txt')
+        if not os.path.islink(camlnk):
+            os.symlink(os.path.join(myloc, 'cameras.ini'), camlnk)
     if isRaspberryPi():
         reflnk = os.path.expanduser('~/Desktop/refresh_UKMON_tools.sh')
         if not os.path.islink(reflnk):
