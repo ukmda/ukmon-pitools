@@ -36,3 +36,4 @@ echo "testing connections"
 python $here/sendToLive.py test test
 python $here/uploadToArchive.py test
 echo "if you did not see success messages for each camera plus one extra, contact us for advice" 
+if [ "$DOCKER_RUNNING" != "true" ] ; then read -p "Press any key to finish" ; fi
