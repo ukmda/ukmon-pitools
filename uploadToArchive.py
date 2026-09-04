@@ -251,7 +251,7 @@ def readIniFile(filename, stationid):
         if os.path.isfile(os.path.expanduser('~/source/Stations/' + stationid + '/.config')):
             vals['RMSCFG'] = os.path.expanduser('~/source/Stations/' + stationid + '/.config')
     # make sure extrascript value is valid
-    if 'EXTRASCRIPT' in vals:
+    if 'EXTRASCRIPT' in vals and len(vals['EXTRASCRIPT'].strip() > 1):
         if not os.path.isfile(vals['EXTRASCRIPT']):
             log.warning('extrascript {} not found - check ini'.format(vals['EXTRASCRIPT']))
             vals['EXTRASCRIPT']=None
