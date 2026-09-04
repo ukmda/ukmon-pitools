@@ -535,6 +535,7 @@ def manualUpload(targ_dir, stationid, sciencefiles=False):
         stations = getListOfStations(myloc)
         for cam in stations:
             stationid = cam[0]
+            print('testing', stationid)
             inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
             if inifvals['LOCATION']=='NOTCONFIGURED':
                 continue
