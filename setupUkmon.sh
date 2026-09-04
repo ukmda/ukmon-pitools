@@ -25,8 +25,6 @@ git stash
 git pull
 git stash apply
 
-UKMONKEY=~/.ssh/ukmon_$CAMID
-
 if [ ! -f $here/ukmon.ini ] ; then
     echo "creating default ukmon ini file"
     python -c "from ukmonInstaller import createDefaultIni;createDefaultIni('$here', stationid='$CAMID');"
@@ -45,6 +43,8 @@ if [ $? == 1 ] ; then
 fi 
 
 source $here/ukmon.ini
+UKMONKEY=~/.ssh/ukmon_$CAMID
+
 # creating an ssh key if not already present
 if [ ! -f  ${UKMONKEY} ] ; then 
     echo "creating ukmon ssh key"
