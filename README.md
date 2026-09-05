@@ -47,7 +47,8 @@ UK54321=myloc_ne
 ``` 
 
 * if there were any mismappings, fix them.
-* Once you're happy with `cameras.ini`, rerun `setupUkmon.sh` again for each camera in turn. You should now see several success messages. So, if you've got three cameras, you will have run the setup routine six times in total.
+* Once you're happy with `cameras.ini`, rerun `setupUkmon.sh` again for each camera in turn. You should now see several success messages. 
+* So, if you've got three cameras, you will have run the setup routine six times in total. 
 
 * In a terminal window type `crontab -e` and remove any rows relating to the old versions of the toolset. Be careful not to remove rows for the new installation.
 * Finally, run `refreshTools.sh` and confirm that you get one general success message and one individual message per camera. 
