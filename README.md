@@ -29,15 +29,20 @@ Rerun `setupUkmon.sh` for each camera you have on the Pi or Linux box. So if you
 
 * We will then add the keys to our server and send you ukmon IDs and instructions on how to finish the setup.
 
-* *Note that in a multi-cam configuration, the LOCATION and UKMONKEY values in `ukmon.ini` are not used. Location os obtained from `cameras.ini` and the keyfile is determined from the RMSID*
+* *Note that in a multi-cam configuration, the LOCATION and UKMONKEY values in `ukmon.ini` are not used. Location is obtained from `cameras.ini` and the keyfile is determined from the RMSID*
 
 ### MIGRATION OF AN EXISTING MULTICAM INSTALLATION
 There's no need to make any changes as the toolset will work as before for both single and multi-cam setups. 
 
 However, if you have a multi-cam setup and want to consolidate onto a single instance of the toolset, you can do so as follows: 
-* Install a new instance which supports all your cameras as above
+* Install a new instance:
+``` bash
+cd $HOME/source  
+git clone https://github.com/ukmda/ukmon-pitools.git  
+cd $HOME/source/ukmon-pitools/
+```
 * Run `setupUkmon.sh` for each camera. As you already have UKMON IDs you won't be asked to send us the keys. 
-* Open `cameras.ini` and check the mapping from ukmon ID to RMS ID is correct. It should look something like this:
+* Open `cameras.ini` in the ukmon-pitools folder and check the mapping from ukmon ID to RMS ID is correct. It should look something like this:
 ``` bash
 # camera mapping file
 # echo add all cameras on this PC or Pi even if you only have one camera
@@ -46,7 +51,9 @@ UK12345=myloc_s
 UK54321=myloc_ne
 ``` 
 
-* if there were any mismappings, fix them then rerun `setupUkmon.sh` for the affected camera. You should see several success messages.
+* if there were any mismappings, fix them.
+* Once you're happy with `cameras.ini`, rerun `setupUkmon.sh` again for each camera in turn. You should now see several success messages. 
+* So, if you've got three cameras, you will have run the setup routine six times in total. 
 
 * In a terminal window type `crontab -e` and remove any rows relating to the old versions of the toolset. Be careful not to remove rows for the new installation. 
 * Finally, run `refreshTools.sh` and confirm that you get one general success message and one individual message per camera. 
