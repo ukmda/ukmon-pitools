@@ -11,7 +11,7 @@ import Utils.BatchFFtoImage as bff
 import shutil
 import tempfile
 import boto3
-from uploadToArchive import readKeyFile, readIniFile
+from uploadToArchive import readKeyFile, readIniFile, getListOfStations, getLatestKeys, keyfilename
 import logging
 import RMS.ConfigReader as cr
 import numpy as np
@@ -134,7 +134,7 @@ def testFeed(keys, cfg):
     return retmsg
 
 
-def singleUpload(cap_dir, dir_file):
+def singleUpload(cap_dir, dir_file, stationid=None):
     """This function is used to manually upload a single event.
     It can also be used to test the connection - see note below. 
 
@@ -153,31 +153,38 @@ def singleUpload(cap_dir, dir_file):
 
     camloc = None
     myloc = os.path.split(os.path.abspath(__file__))[0]
+    if not stationid:
+        stations = getListOfStations(myloc)
+        tmpid = list(stations)[0][0]
+        if tmpid:
+            stationid = tmpid.upper()
     # get camera location from ini file
 
-    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'))
+    inifvals = readIniFile(os.path.join(myloc, 'ukmon.ini'), stationid)
     if not inifvals:
-        log.warning('unable to open ini file')
-        return 'unable to open ini file'
+        log.error('ukmon ini file invalid')
+        return 'ukmon ini file invalid'
+    if inifvals['LOCATION']=='NOTCONFIGURED':
+        log.error(f'ukmon location not set for {stationid} - check cameras.ini and ukmon.ini')
+        return f'ukmon location not set for {stationid} - check cameras.ini and ukmon.ini'
     camloc = inifvals['LOCATION']
-    try:
-        rmscfg = inifvals['RMSCFG']
-    except Exception:
-        rmscfg='~/source/RMS/.config'
-    if camloc == 'NOTCONFIGURED':
-        print('LOCATION not found in ini file, aborting')
-        return 'not configured'
+    rmscfg = inifvals['RMSCFG']
+    if not os.path.isfile(os.path.expanduser(rmscfg)):
+        log.error('RMS config file not found at {}, aborting'.format(rmscfg))
+        return 'RMS config file not found at', rmscfg, ', aborting'
+
+    # Load the RMS config file
+    cfg = cr.parse(os.path.expanduser(rmscfg))
 
     # get credentials
-    keys = readKeyFile(os.path.join(myloc, 'live.key'), inifvals)
+    if not os.path.isfile(os.path.join(myloc, keyfilename)):
+        if not getLatestKeys(myloc, cfg.stationID):
+            print('unable to get AWS configuration for', inifvals['LOCATION'])
+            return 'unable to get AWS configuration'
+    keys = readKeyFile(os.path.join(myloc, keyfilename), inifvals)
     if not keys:
-        log.warning('unable to open keyfile')
-        return 'unable to open keyfile'
-
-    # read a few variables from the RMS config file
-    cfg = cr.parse(os.path.expanduser(rmscfg))
-#    configpath, configname = os.path.split(os.path.expanduser(rmscfg))
-#    cfg = cr.loadConfigFromDirectory(configname, configpath)
+        log.error('unable to open AWS configuration')
+        return 'unable to open AWS configuration'
 
     if cap_dir == 'test' and dir_file == 'test':
         retmsg = testFeed(keys, cfg)
@@ -188,7 +195,12 @@ def singleUpload(cap_dir, dir_file):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print('usage: python sendToLive.py capdir ffname')
+        print('usage: python sendToLive.py capdir ffname camid')
+        print('or')
+        print('     : python sendToLive.py test test')
         exit(1)
-    retmsg = singleUpload(sys.argv[1], sys.argv[2])
-    print(retmsg)
+    
+    stationid = sys.argv[3] if len(sys.argv) > 3 else None
+    retmsg = singleUpload(sys.argv[1], sys.argv[2], stationid)
+    if retmsg:
+        print(retmsg)

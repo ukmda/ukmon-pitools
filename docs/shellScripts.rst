@@ -27,16 +27,7 @@ Other files
 These files are either created automatically by the refresh script, or can be created by the 
 user to enable extra features of the process. 
 
-**ukmon.ini and live.key**
+**ukmon.ini and .settings**
 Configuration files required for the operation of the module. A default ini file 
 is deployed from github and you'll be given instructions on how to update it. 
 The other file will be automatically downloaded when the refreshTools script is run.
-
-**domp4s**
-If this file exists, the script will additionally create an MP4 of each detection and 
-upload it to the ukmon Archive each night.
-
-**extrascript**
-If this file exists, ukmonPostProc will assume it is the full path to an additional script to 
-run after all other processing is complete. The extra script is passed the same three arguments
-as the normal RMS PostProcessing script. 
