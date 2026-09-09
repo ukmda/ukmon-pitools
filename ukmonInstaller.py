@@ -24,7 +24,7 @@ from uploadToArchive import readIniFile, updateHelperIp, updateExtrascript
 log = logging.getLogger("ukmonlogger")
 log.setLevel(logging.WARNING)
 
-oldip = '3.9.65.98'
+oldip = '3.11.55.160'
 currip = 'batchserver.ukmeteors.co.uk'
 
 
