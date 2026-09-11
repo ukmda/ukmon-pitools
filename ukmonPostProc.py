@@ -156,49 +156,38 @@ if __name__ == '__main__':
     arg_parser.add_argument( '-c', '--config', nargs=1, metavar='CONFIG_PATH', type=str,
         help="Path to the RMS config file. Defaults to working it out from dir_path")
     
-    arg_parser.add_argument( '-t', '--toolcfg', nargs=1, metavar='TOOL_CFG_PATH', type=str,
-        help="Path to the ukmon config file. Defaults to loading ukmon.ini from current directory.")
-    
     cml_args = arg_parser.parse_args()
 
     if not cml_args.config and not cml_args.dir_path:
-        print('Must supply either --dir_path or --config parameters or both')
+        print('Must supply either --dir_path or --config parameters')
         exit(1)
 
-    if cml_args.config:
-        rms_cfg_file = cml_args.config
-    else:
-        rms_cfg_file = [os.path.expanduser('~/source/RMS/.config')]
-    rmscfg = cr.loadConfigFromDirectory(rms_cfg_file, 'notused')
-    stationId = rmscfg.stationID
-    if stationId == 'XX0001':
-        print(f'Station not configured in {rms_cfg_file}')
-
-    datadir = rmscfg.data_dir
     if cml_args.dir_path:
-        targdir = cml_args.dir_path[0]
-        lastcap = os.path.normpath(os.path.expanduser(targdir))
-        if not os.path.isdir(lastcap):
-            testpth = os.path.expanduser(os.path.join(datadir, 'CapturedFiles', f'*{targdir}*'))
-            capdirs = glob.glob(testpth)
-            if len(capdirs) == 0:
-                print(f'Capture folder {cml_args.dir_path[0]} not found')
-                exit(1)
-            else:
-                capdirs.sort()
-                lastcap = capdirs[-1]
-    else:
-        capdir = os.path.expanduser(os.path.join(datadir, 'CapturedFiles'))
-        recentcaps = os.listdir(capdir)
-        recentcaps.sort()
-        if len(recentcaps) >0:
-            lastcap = recentcaps[-1]
-        else:
-            print(f'no captured data in {capdir}')
-            exit(0)
-    lastcap = os.path.split(lastcap)[1]
+        arch_dir = os.path.normpath(cml_args.dir_path[0])
+        if not os.path.isdir(arch_dir):
+            print(f'Target path {arch_dir} not found.')
+            exit(1)
+        rms_cfg_file = os.path.join(arch_dir, '.config')
+        if not os.path.isfile(rms_cfg_file):
+            print(f'Target path {arch_dir} does not contain an RMS config file.')
+            exit(1)
+        rmscfg = cr.loadConfigFromDirectory([rms_cfg_file], 'notused')
 
-    cap_dir = os.path.join(datadir, 'CapturedFiles', lastcap)
-    arch_dir = os.path.join(datadir, 'ArchivedFiles', lastcap)
-    print(f'processing {lastcap}')
+    else: # cml_args.config was supplied
+        rms_cfg_file = cml_args.config[0]
+        if not os.path.isfile(rms_cfg_file):
+            print(f'Config file {rms_cfg_file} not found.')
+            exit(1)
+        rmscfg = cr.loadConfigFromDirectory([rms_cfg_file], 'notused')
+        if rmscfg.stationID == 'XX0001':
+            print(f'Station not configured in {rms_cfg_file}')
+            exit(1)
+        base_dir = os.path.join(rmscfg.data_dir, 'ArchivedFiles')
+        archdirs = glob.glob(f'{base_dir}/*')
+        archdirs = [x for x in archdirs if '.bz2' not in x]
+        archdirs.sort()
+        arch_dir = archdirs[-1]
+
+    cap_dir = arch_dir.replace('ArchivedFiles','CapturedFiles')
+    print(f'processing {arch_dir}')
     rmsExternal(cap_dir, arch_dir, rmscfg)
