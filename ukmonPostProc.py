@@ -126,10 +126,7 @@ def rmsExternal(cap_dir, arch_dir, config):
             sloc, sname = os.path.split(inifvals['EXTRASCRIPT'])
             sys.path.append(sloc)
             scrname, _ = os.path.splitext(sname)
-            print('about to import extl module')
-            ukmlog.info('about to import extl module')
             nextscr=impmod(scrname)
-            ukmlog.info('launching {} from {}'.format(scrname, sloc))
             nextscr.rmsExternal(cap_dir, arch_dir, config)
         except Exception as e:
             ukmlog.warning('problem calling external script')
@@ -141,10 +138,6 @@ def rmsExternal(cap_dir, arch_dir, config):
         os.remove(rebootlockfile)
     ukmlog.info('ukmon done')
     print('ukmon done')
-    # clear log handlers again
-    #for handler in ukmlog.handlers[:]:
-    #    ukmlog.removeHandler(handler)
-    #    handler.close()
     return True
 
 
