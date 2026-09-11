@@ -9,6 +9,7 @@ extrascript
 dotimelapse
 .config.backup
 ukmon.ini
+.settings
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
