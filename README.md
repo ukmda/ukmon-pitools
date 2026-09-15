@@ -29,7 +29,6 @@ Rerun `setupUkmon.sh` for each camera you have on the Pi or Linux box. So if you
 
 * We will then add the keys to our server and send you ukmon IDs and instructions on how to finish the setup.
 
-* *Note that in a multi-cam configuration, the LOCATION and UKMONKEY values in `ukmon.ini` are not used. Location is obtained from `cameras.ini` and the keyfile is determined from the RMSID*
 
 ### MIGRATION OF AN EXISTING MULTICAM INSTALLATION
 There's no need to make any changes as the toolset will work as before for both single and multi-cam setups. 
@@ -59,6 +58,8 @@ UK54321=myloc_ne
 * Finally, run `refreshTools.sh` and confirm that you get one general success message and one individual message per camera. 
 
 Let the system run normally for a few days before deleting the folders containing the old camera-specific toolsets. 
+
+* *Note that in a multi-cam configuration, the LOCATION and UKMONKEY values in `ukmon.ini` are no longer used. Location is obtained from `cameras.ini` and the keyfile is determined from the RMSID. So don't be surprised to see NOTCONFIGURED in the ini file!*. 
 
 ## Optional Settings
 
