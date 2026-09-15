@@ -72,7 +72,7 @@ The toolset has three optional capabilities that can be configured via `ukmon.in
 ### Running an Additional Script of your own
 If you want to run an additional Python script after the ukmon toolset finishes, update EXTRASCRIPT with the full path and name of the python script. For example:
 ``` bash
-export EXTRASCRIPT=/home/rms/source/mystuff/myscript.py
+EXTRASCRIPT=/home/rms/source/mystuff/myscript.py
 ```
 
 The script must contain a function with the following definition
@@ -87,9 +87,14 @@ If you'd like to rerun the daily upload for a given day you can do so in a Termi
 
 ``` bash
 cd $HOME/source/ukmon-pitools  
-python ukmonPostProc.py -d /full/path/to/CapturedFiles/ -c /full/path/to/config-file
-
+python ukmonPostProc.py -d /full/path/to/CapturedFiles/
 ```
+or, to rerun for the last good day's capture
+``` bash
+cd $HOME/source/ukmon-pitools  
+python ukmonPostProc.py -c /full/path/to/config-file
+```
+
 where `/full/path/to/CapturedFiles/` is the full path to the folder that you want to reprocess eg `~/RMS_data/UK0006/CapturedFiles/UK0006_20210312_183741_206154`  
 and `/full/path/to/config-file` is the full path to the RMS config file for the camera eg `~/source/Stations/UK0006/.config`
 
@@ -100,7 +105,7 @@ You can force-restart the uploader by typing
 cd $HOME/source/ukmon-pitools  
 ./restartLiveMon.sh force
 ```
-By default, the script will scan the last 30 minutes of the log and upload any events it finds. If you need to scan a longer window, you can do so by setting an environment variable first. For example to scan the last hour do this:
+The script will scan the last 30 minutes of the log and upload any events it finds. If you need to scan a longer window, you can do so by setting an environment variable first. For example to scan the last hour do this:
 
 ```bash 
 export UKMMAXAGE=3600
