@@ -8,7 +8,9 @@ These tools manage uploads of RMS data to the UK Meteor Data Archive and to the 
 There is more information about RMS and the toolset in our wiki [here](https://github.com/ukmda/ukmon-pitools/wiki "UKMON Wiki")
 
 ## INSTALLATION
-*NB: first make sure all your RMS stations are set up and working correctly. These instructions assume you already have a working station that is contributing to GMN.*
+*NB: first make sure all your RMS stations are set up and working correctly. If you've not yet configured RMS, stop now and configure it first.*
+
+Once your station is set up on GMN, you can install these tools. 
 
 Login to your pi or Linux box, open a Terminal window from the Accessories menu, then type the following
 ``` bash
