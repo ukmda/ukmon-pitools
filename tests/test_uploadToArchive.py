@@ -3,8 +3,7 @@
 import boto3
 import os
 import shutil
-from uploadToArchive import readKeyFile, uploadOneFile, manualUpload, \
-    readIniFile, checkMags, updateLocation, getLatestKeys, keyfilename
+from uploadToArchive import readKeyFile, manualUpload, readIniFile, checkMags, getLatestKeys, keyfilename
 from ukmonInstaller import updateHelperIp
 
 basedir = os.path.realpath(os.path.dirname(__file__))
