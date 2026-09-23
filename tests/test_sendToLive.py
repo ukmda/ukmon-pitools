@@ -5,7 +5,6 @@
 import os
 import sendToLive # noqa:E402
 from RMS.ConfigReader import loadConfigFromDirectory # noqa:E402
-import xmltodict # noqa:E402
 
 
 basedir = os.path.realpath(os.path.dirname(__file__))
@@ -26,10 +25,11 @@ def test_xmlcreatorName(dir_file = 'FF_UK001L_20230319_031241_804_0598784.fits',
 
 def test_xmlData(xmlfile='FF_UK001L_20230319_031241_804_0598784.xml', testval=47092310):
     fullxml = os.path.join(basedir, 'output', xmlfile)
-    with open(fullxml) as fd:
-        dd = xmltodict.parse(fd.read())
-    uc = dd['ufocapture_record']['ufocapture_paths']        
-    bri = int(uc['uc_path'][0]['@bmax'])
+    lis = open(fullxml, 'r').readlines()
+    bmaxs = [li for li in lis if 'bmax' in li]
+    bmaxloc = bmaxs[0].find('bmax')
+    bmaxstr = bmaxs[0][bmaxloc+6:]
+    bri = int(bmaxstr[:bmaxstr.find('"')])
     os.remove(fullxml)
     assert bri==testval
 
