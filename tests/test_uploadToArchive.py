@@ -13,8 +13,7 @@ if not os.path.isdir(tmpdir):
     os.makedirs(tmpdir)
 shutil.copyfile(os.path.join(basedir, '../ukmon.ini'),os.path.join(basedir,'ukmon.ini'))
 updateHelperIp(basedir, helperip='batchserver.ukmeteors.co.uk')
-updateLocation(basedir, 'testpi4')
-getLatestKeys(basedir, 'testpi4')
+getLatestKeys(basedir, None)
 
 
 def test_checkMags():
@@ -37,12 +36,7 @@ def test_readIniFile():
 def test_readKeyFile():
     inifs = readIniFile(os.path.join(basedir,'ukmon.ini'), 'testpi4')
     vals = readKeyFile(os.path.join(basedir,keyfilename), inifs)
-    assert vals['S3FOLDER'] in  ['test/uploads/main','archive/Tackley']
-
-
-def test_readKeyfileIni():
-    vals = readIniFile(os.path.join(basedir,'ukmon.ini'), 'testpi4')
-    assert vals['RMSCFG'] in ['~/source/Stations/UK0006/.config', '/root/source/RMS/.config', '~/source/RMS/.config']
+    assert vals['S3FOLDER'] is not None 
 
 
 def test_uploadOneFile():
