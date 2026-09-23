@@ -7,7 +7,7 @@
 here="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 source ~/vRMS/bin/activate
-pip install pytest pytest-cov
+[ "$(which pytest)" == "" ] && pip install pytest pytest-cov
 SRCDIR=$here/..
 export PYTHONPATH=$SRCDIR:$PYTHONPATH
 pytest
