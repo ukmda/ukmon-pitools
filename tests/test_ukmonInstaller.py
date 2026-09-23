@@ -90,7 +90,7 @@ def test_getLatestKeys_normal():
     shutil.copyfile(os.path.join(myloc, '../ukmon.ini'),os.path.join(homedir,'ukmon.ini'))
     updateHelperIp(homedir, helperip='batchserver.ukmeteors.co.uk')
     #updateLocation(homedir, 'testpi4')
-    res = getLatestKeys(homedir)
+    res = getLatestKeys(homedir, None)
     assert res is True
     os.remove(os.path.join(homedir, 'ukmon.ini'))
     return 
@@ -101,7 +101,7 @@ def test_getLatestKeys_newname():
     updateHelperIp(homedir, helperip='batchserver.ukmeteors.co.uk')
     updateLocation(homedir, 'testpi4')
     remoteinifname = 'ukmon.ini.newname'
-    res = getLatestKeys(homedir, remoteinifname=remoteinifname)
+    res = getLatestKeys(homedir, None, remoteinifname=remoteinifname)
     # can only run this test within my network
     if not res:
         return 
