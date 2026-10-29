@@ -36,7 +36,7 @@ Rerun `setupUkmon.sh` for each camera you have on the Pi or Linux box. So if you
 There's no need to make any changes as the toolset will work as before for both single and multi-cam setups. 
 
 However, if you have a multi-cam setup and want to consolidate onto a single instance of the toolset, you can do so as follows: 
-* First, check your ssh keys follow the required convention. The two parts must start with `ukmon` and have a suffix of `_gmnid`. So for example if you have cameras UK0006 and UK000F, the keys should be named `ukmon_UK0006` and `ukmon_UK000F`.
+* First, check your ssh keys follow the required convention. The key must start with `ukmon` and have a suffix of `_gmnid`. So for example if you have cameras UK0006 and UK000F, the keys should be named `ukmon_UK0006` and `ukmon_UK000F`. You can also rename the public halves too if you want (eg to `ukmon_UK0006.pub`). 
 * Now, install a new instance of the toolset:
 ``` bash
 cd $HOME/source  
